@@ -1,0 +1,1553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>English Actors Register</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a casting-register ledger. Surname index tabs and filters in a sticky bar, a strip of headshots, then one row per player. */
+:root {
+  --paper: #EDEFF3;
+  --surface: #FFFFFF;
+  --ink: #15181E;
+  --muted: #5B6271;
+  --line: #D3D8E0;
+  --accent: #7A1E36;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F4E4E9;
+  --ok: #2F6B4F;
+  --font-display: "Libre Caslon Display", "Big Caslon", "Book Antiqua", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --photo-w: 72px;
+  --slide-w: 112px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111318; --surface: #191C23; --ink: #E8EAEF; --muted: #9AA1AE;
+    --line: #2B2F38; --accent: #E3839B; --accent-ink: #1A0E12; --accent-soft: #3A1F28; --ok: #7CC4A0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111318; --surface: #191C23; --ink: #E8EAEF; --muted: #9AA1AE;
+  --line: #2B2F38; --accent: #E3839B; --accent-ink: #1A0E12; --accent-soft: #3A1F28; --ok: #7CC4A0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 15px/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+a { color: inherit; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap {
+  max-width: 1280px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+header.masthead { padding-block: 40px 20px; }
+.eyebrow {
+  font: 500 11px/1 var(--font-data); letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+}
+h1 {
+  font: 400 clamp(36px, 6vw, 64px)/1.02 var(--font-display);
+  margin: 10px 0 12px; letter-spacing: -.01em; text-wrap: balance;
+}
+.lede { max-width: 66ch; color: var(--muted); margin: 0; }
+.lede a { color: var(--ink); }
+.cache-note {
+  margin: 12px 0 0; max-width: 80ch; font-size: 13px; color: var(--muted);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+}
+.text-btn {
+  font: 500 12px/1 var(--font-body); color: var(--accent); background: none; cursor: pointer;
+  border: 1px solid currentColor; border-radius: 999px; padding: 5px 10px;
+}
+.text-btn:hover { background: var(--accent-soft); }
+
+.notice {
+  margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--accent); border-radius: 6px;
+  background: var(--accent-soft); max-width: 72ch;
+}
+.notice button {
+  margin-top: 8px; font: 500 13px var(--font-body); color: var(--accent-ink); background: var(--accent);
+  border: 0; border-radius: 5px; padding: 6px 12px; cursor: pointer;
+}
+
+/* ---------- sticky bar: surname index + filters ---------- */
+.toolbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--paper) 94%, transparent);
+  backdrop-filter: blur(6px);
+  border-block: 1px solid var(--line);
+}
+.alpha-row { display: flex; align-items: center; gap: 12px; padding-block: 10px 0; }
+.alpha-label { font: 500 10px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.alpha {
+  display: flex; gap: 3px; overflow-x: auto; min-width: 0; padding-block: 2px 4px; scrollbar-width: thin;
+}
+.alpha a {
+  flex: 0 0 auto; min-width: 30px; height: 30px; padding: 0 6px; display: grid; place-items: center;
+  font: 500 14px/1 var(--font-display); text-decoration: none; color: var(--ink);
+  border: 1px solid transparent; border-radius: 4px;
+}
+.alpha a:hover { border-color: var(--line); background: var(--surface); }
+.alpha a.all { font: 500 11px/1 var(--font-data); letter-spacing: .08em; text-transform: uppercase; padding: 0 9px; }
+.alpha a[aria-current="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.alpha a.empty { color: var(--muted); opacity: .4; pointer-events: none; }
+.alpha.searching a[aria-current="true"] { background: transparent; color: var(--accent); }
+
+.controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; padding-block: 8px 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font: 500 10px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+input[type="search"], select {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; min-width: 0; max-width: 100%;
+}
+.field .label { font: 500 10px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.seg button {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font: 13px/1 var(--font-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 11px;
+}
+.seg button:hover { border-color: var(--accent); }
+.seg button .n { font: 11px/1 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.seg button[aria-checked="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg button[aria-checked="true"] .n { color: inherit; opacity: .75; }
+.pick {
+  display: flex; align-items: center; gap: 8px; padding: 5px 6px 5px 12px; align-self: flex-end;
+  background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 999px; font-size: 13px;
+}
+.pick b { font: 400 16px/1 var(--font-display); }
+.field.grow { flex: 1 1 200px; }
+.field.grow input { width: 100%; }
+.status {
+  margin-left: auto; display: flex; flex-wrap: wrap; gap: 6px 14px; padding-bottom: 6px;
+  font: 12px/1.4 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.status b { color: var(--ink); font-weight: 500; }
+.status .done b { color: var(--ok); }
+
+/* ---------- gallery carousel ---------- */
+.gallery { padding-block: 18px 6px; }
+.gallery-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; margin-bottom: 10px; }
+.gallery-title { font: 400 26px/1.1 var(--font-display); margin: 4px 0 0; }
+.gallery-ctrl { display: flex; align-items: center; gap: 8px; }
+.gallery-count { font: 12px/1.4 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.icon-btn {
+  width: 36px; height: 36px; display: grid; place-items: center; padding: 0;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 50%; cursor: pointer;
+}
+.icon-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn svg.solid { fill: currentColor; stroke: none; }
+.icon-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.icon-btn:disabled { opacity: .4; cursor: default; }
+.track {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  overscroll-behavior-x: contain; padding-block: 2px 12px; scrollbar-width: thin;
+}
+.slide {
+  flex: 0 0 var(--slide-w); scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px;
+  background: none; border: 0; padding: 0; margin: 0; text-align: left; color: inherit; font: inherit; cursor: pointer;
+  animation: rise .45s ease both;
+}
+.slide-photo {
+  display: block; aspect-ratio: 3 / 4; max-width: 100%; border-radius: 5px; overflow: hidden;
+  background: var(--surface); border: 1px solid var(--line);
+}
+.slide-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; display: block; transition: transform .5s ease; }
+.slide:hover .slide-photo img, .slide:focus-visible .slide-photo img { transform: scale(1.04); }
+.slide-name { font: 400 15px/1.2 var(--font-display); text-wrap: balance; }
+.slide:hover .slide-name { color: var(--accent); }
+.slide[aria-pressed="true"] .slide-photo { border: 2px solid var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.slide[aria-pressed="true"] .slide-name { color: var(--accent); }
+.gallery-empty {
+  display: grid; place-items: center; min-height: 120px; border: 1px dashed var(--line); border-radius: 8px;
+  color: var(--muted); font-size: 14px; text-align: center; padding: 16px;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- table ---------- */
+main { padding-block: 12px 48px; }
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 980px; }
+thead th {
+  text-align: left; font: 500 10.5px/1.2 var(--font-data); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--line); background: var(--surface);
+  white-space: nowrap;
+}
+tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: color-mix(in srgb, var(--accent-soft) 35%, transparent); }
+tbody tr.flash td { animation: flash 2s ease; }
+@keyframes flash { 0%, 40% { background: var(--accent-soft); } 100% { background: transparent; } }
+.empty-row td { text-align: center; color: var(--muted); padding: 32px 14px; }
+
+.c-num { width: 48px; font: 12px var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.c-name { width: 210px; }
+.honour { display: block; font: 500 10px/1 var(--font-data); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.name { font: 400 20px/1.15 var(--font-display); text-decoration: none; }
+.name:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; font: 12px var(--font-data); }
+.links a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+.links a:hover { color: var(--accent); border-color: var(--accent); }
+
+figure { margin: 0; width: var(--photo-w); }
+.frame {
+  width: var(--photo-w); max-width: 100%; aspect-ratio: 3 / 4; border-radius: 4px; overflow: hidden;
+  background: var(--paper); border: 1px solid var(--line); display: grid; place-items: center;
+}
+.frame img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; display: block; animation: fade .4s ease both; }
+.frame a { display: block; width: 100%; height: 100%; }
+.frame.empty, .frame.queued {
+  border-style: dashed; color: var(--muted); font: 10.5px/1.3 var(--font-body); text-align: center; padding: 6px;
+}
+.frame.queued { opacity: .6; }
+.frame.loading { background: linear-gradient(100deg, var(--paper) 30%, var(--line) 50%, var(--paper) 70%); background-size: 300% 100%; animation: shimmer 1.6s linear infinite; }
+@keyframes shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+figcaption { margin-top: 5px; font: 10.5px/1.3 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.date { font: 14px/1.35 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sub { display: block; font: 12px/1.35 var(--font-body); color: var(--muted); margin-top: 3px; }
+.living { color: var(--ok); }
+.pending { color: var(--muted); font: 12px var(--font-body); }
+.c-last { width: 190px; }
+.last-title { text-decoration: none; line-height: 1.35; }
+.last-title:hover { text-decoration: underline; }
+.kind { font: 12px/1.35 var(--font-data); color: var(--muted); }
+
+ol.films { margin: 0; padding: 0; list-style: none; counter-reset: f; display: grid; gap: 4px; }
+ol.films li { counter-increment: f; display: grid; grid-template-columns: 18px 1fr; gap: 6px; line-height: 1.35; }
+ol.films li::before { content: counter(f); font: 11px/1.6 var(--font-data); color: var(--accent); }
+ol.films a { text-decoration: none; }
+ol.films a:hover { text-decoration: underline; }
+ol.films .yr { font: 12px var(--font-data); color: var(--muted); margin-left: 4px; }
+
+footer { padding-block: 0 40px; color: var(--muted); font-size: 13px; }
+footer p { max-width: 80ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track { scroll-behavior: auto; }
+  .slide, .frame img, .frame.loading, tbody tr.flash td { animation: none; }
+  .slide-photo img { transition: none; }
+}
+
+/* Phone: each row becomes a card */
+@media (max-width: 760px) {
+  :root { --slide-w: 100px; }
+  .alpha-label { display: none; }
+  .status { margin-left: 0; width: 100%; }
+  .table-scroll { border: 0; background: transparent; overflow: visible; }
+  table { min-width: 0; }
+  thead { display: none; }
+  tbody { display: grid; gap: 12px; }
+  tbody tr {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px;
+  }
+  tbody tr:hover td { background: transparent; }
+  tbody td { padding: 0; border: 0; min-width: 0; width: auto; }
+  td.c-num { display: none; }
+  td.c-name, td.c-films { grid-column: 1 / -1; }
+  td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: 4px;
+    font: 500 10px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+  }
+  .empty-row { display: block !important; }
+  :root { --photo-w: 96px; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Wikipedia · List of English actors</div>
+    <h1>English Actors Register</h1>
+    <p class="lede">Every name on Wikipedia's <a href="https://en.wikipedia.org/wiki/List_of_English_actors" target="_blank" rel="noopener">List of English actors</a>, with dates from Wikidata, a photograph from Wikimedia Commons, each actor's last appearance and their five best-known films. Choose a letter to load actors by surname.</p>
+    <p class="cache-note" id="cacheNote">Checking for photos saved in this browser…</p>
+    <div class="notice" id="notice" hidden></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="alpha-row">
+      <span class="alpha-label">Surname</span>
+      <nav class="alpha" id="alpha" aria-label="Surname initial"></nav>
+    </div>
+    <div class="controls">
+      <div class="field grow">
+        <label for="q">Search all letters</label>
+        <input type="search" id="q" placeholder="Name or film title" autocomplete="off">
+      </div>
+      <div class="field">
+        <span class="label" id="genderLabel">Gender</span>
+        <div class="seg" id="gender" role="radiogroup" aria-labelledby="genderLabel">
+          <button type="button" role="radio" aria-checked="true" data-v="all">Everyone <span class="n"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-v="f">Women <span class="n"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-v="m">Men <span class="n"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-v="x">Non-binary <span class="n"></span></button>
+          <button type="button" role="radio" aria-checked="false" data-v="u">Not recorded <span class="n"></span></button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="life">Show</label>
+        <select id="life">
+          <option value="all">Living and deceased</option>
+          <option value="living">Living</option>
+          <option value="dead">Deceased</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sort">Order</label>
+        <select id="sort">
+          <option value="surname">Surname A–Z</option>
+          <option value="first">First name A–Z</option>
+          <option value="old">Born, earliest first</option>
+          <option value="young">Born, latest first</option>
+        </select>
+      </div>
+      <div class="pick" id="pick" hidden>
+        <span>Showing only <b id="pickName"></b></span>
+        <button type="button" class="text-btn" id="pickClear">Show everyone</button>
+      </div>
+      <div class="status" id="status" aria-live="polite">
+        <span id="st-list">List: <b>loading…</b></span>
+        <span id="st-det">Dates: <b>–</b></span>
+        <span id="st-film">Credits: <b>–</b></span>
+        <span id="st-photo">Photos: <b>–</b></span>
+        <span id="st-show">Showing <b>–</b></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="gallery" aria-labelledby="galleryTitle">
+  <div class="wrap">
+    <div class="gallery-head">
+      <div>
+        <div class="eyebrow" id="galleryEyebrow">Gallery</div>
+        <h2 class="gallery-title" id="galleryTitle">Faces</h2>
+      </div>
+      <div class="gallery-ctrl">
+        <span class="gallery-count" id="galleryCount" aria-live="polite"></span>
+        <button class="icon-btn" type="button" id="galPrev" aria-label="Previous photos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="icon-btn" type="button" id="galPlay" aria-label="Pause slideshow" aria-pressed="true">
+          <svg viewBox="0 0 24 24" class="solid" aria-hidden="true" id="galPlayIcon"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+        <button class="icon-btn" type="button" id="galNext" aria-label="Next photos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="track" id="track" aria-label="Actor photos"></div>
+    <div class="gallery-empty" id="galleryEmpty">Photos appear here as they load. Select a face to show only that actor in the table.</div>
+  </div>
+</section>
+
+<main>
+  <div class="wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="c-num">#</th>
+            <th class="c-name">Name</th>
+            <th>Photo</th>
+            <th>Born</th>
+            <th>Died</th>
+            <th class="c-last">Last appearance</th>
+            <th>Top 5 films</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Sources: names from Wikipedia; dates, gender, IMDb IDs and screen credits from Wikidata; photographs from Wikimedia Commons (click a photo in the table for its licence and photographer). The photo is the image Wikipedia uses for the actor's article, or failing that the most recent dated photo in their Commons category. Unreleased films are left out. Films are ranked by how many language editions of Wikipedia cover them, which tracks how widely known a film is.</p>
+    <p>Last appearance is the most recent dated screen credit Wikidata lists for the actor: a film or episode by its original release, or a TV series by when the actor's role ended (or, failing that, when the series ended, ignoring series that ran on after the actor's death). Long-running series still on air with no recorded end are left out, and Wikidata's credits are incomplete for many TV and stage actors.</p>
+    <p>When this page is hosted next to a saved copy (a <code>data</code> folder and a <code>photos</code> folder made by the sync script), it reads names, dates, credits and photos from there and asks Wikipedia only for names added since the copy was made. Opened on its own, it looks up only the selected letter, loads photos one actor at a time in the table's order, and keeps photos in this browser for 30 days and names, dates and credits for 7 days.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const WP = "https://en.wikipedia.org/w/api.php";
+  const COMMONS = "https://commons.wikimedia.org/w/api.php";
+  const WDQS = "https://query.wikidata.org/sparql";
+  const LIST_PAGE = "List_of_English_actors";
+  const SCHEMA = 3;                          // bump to discard data saved by older versions of this page
+  const DAY = 864e5, LIST_TTL = 7 * DAY, INFO_TTL = 7 * DAY, PHOTO_TTL = 30 * DAY;
+  const THUMB = 120;                         // smallest standard Wikimedia thumbnail that still reads as a portrait
+  const LOOKAHEAD = 5;
+  const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const TODAY = new Date();
+  const TODAY_ISO = TODAY.toISOString().slice(0, 10);
+  const REDUCED = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const $ = (id) => document.getElementById(id);
+  const tbody = $("rows"), track = $("track");
+  const coll = new Intl.Collator("en", { sensitivity: "base", numeric: true });
+
+  let actors = [], displayOrder = [];
+  const byId = new Map();
+  let cacheAvailable = false, listSavedAt = null;
+  let letter = "A", genderValue = "all", selectedId = null;
+  // hosted mode: a saved copy (data/actors.json + photos/) sits next to the page
+  let hosted = false, siteSavedAt = null, siteCount = 0, sitePhotos = 0, siteIncomplete = 0;
+  let deltaState = null, deltaCount = 0;
+
+  /* ---------- helpers ---------- */
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  function fetchTimeout(url, ms, opts = {}) {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), ms);
+    return fetch(url, { ...opts, signal: ctl.signal }).finally(() => clearTimeout(t));
+  }
+
+  async function getJSON(url, tries = 5) {
+    let wait = 1500;
+    for (let i = 0; i < tries; i++) {
+      try {
+        const r = await fetchTimeout(url, 45000);
+        if (r.ok) return await r.json();
+        if (r.status === 429 || r.status >= 500) {
+          const ra = parseInt(r.headers.get("Retry-After") || "", 10);
+          await sleep(Number.isFinite(ra) ? ra * 1000 : wait);
+          wait *= 2; continue;
+        }
+        throw new Error("HTTP " + r.status);
+      } catch (e) {
+        if (i === tries - 1) throw e;
+        await sleep(wait); wait *= 2;
+      }
+    }
+  }
+
+  const qs = (params) => Object.entries(params).map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+
+  function limiter(n) {
+    let active = 0; const q = [];
+    const next = () => {
+      if (active >= n || !q.length) return;
+      active++;
+      const { fn, res, rej } = q.shift();
+      fn().then(res, rej).finally(() => { active--; next(); });
+    };
+    return (fn) => new Promise((res, rej) => { q.push({ fn, res, rej }); next(); });
+  }
+  const sparqlSlot = limiter(3);
+  const sparql = (q) => sparqlSlot(() => getJSON(WDQS + "?" + qs({ query: q, format: "json" })));
+
+  const chunk = (arr, n) => { const out = []; for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out; };
+  const normFile = (s) => (s || "").replace(/^File:/i, "").replace(/_/g, " ").trim().toLowerCase();
+  const filePath = (name, w) => "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(name.replace(/^File:/i, "").replace(/ /g, "_")) + "?width=" + w;
+  function filePage(name, url) {
+    const n = encodeURIComponent(name.replace(/^File:/i, "").replace(/ /g, "_"));
+    return (url && url.includes("/wikipedia/en/")) ? "https://en.wikipedia.org/wiki/File:" + n : "https://commons.wikimedia.org/wiki/File:" + n;
+  }
+
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null) continue;
+      if (k === "class") n.className = v;
+      else if (k === "text") n.textContent = v;
+      else n.setAttribute(k, v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  }
+
+  function yearIn(str) {
+    if (!str) return null;
+    const m = String(str).match(/\b(18[4-9]\d|19\d\d|20[0-2]\d)\b/);
+    return m ? +m[1] : null;
+  }
+
+  function sortName(name) {
+    const clean = name.replace(/\([^)]*\)/g, " ").replace(/\b(OBE|MBE|CBE)\b/g, " ").trim();
+    const parts = clean.split(/\s+/);
+    const last = parts.pop() || "";
+    return last + " " + parts.join(" ");
+  }
+  function initialOf(sn) {
+    const c = sn.normalize("NFD").replace(/[̀-ͯ]/g, "").charAt(0).toUpperCase();
+    return /[A-Z]/.test(c) ? c : "#";
+  }
+
+  /* ---------- browser storage (IndexedDB) ---------- */
+  const DB = (() => {
+    let dbp = null;
+    const STORES = ["meta", "info", "photos", "blobs"];
+    function open() {
+      if (dbp) return dbp;
+      dbp = new Promise((res) => {
+        const t = setTimeout(() => res(null), 4000);
+        const done = (v) => { clearTimeout(t); res(v); };
+        try {
+          const r = indexedDB.open("english-actors-register", 1);
+          r.onupgradeneeded = () => { const d = r.result; STORES.forEach((s) => { if (!d.objectStoreNames.contains(s)) d.createObjectStore(s); }); };
+          r.onsuccess = () => done(r.result);
+          r.onerror = () => done(null);
+          r.onblocked = () => done(null);
+        } catch (e) { done(null); }
+      });
+      return dbp;
+    }
+    function req(store, mode, fn) {
+      return open().then((d) => new Promise((res) => {
+        if (!d) return res(undefined);
+        try {
+          const tx = d.transaction(store, mode);
+          const r = fn(tx.objectStore(store));
+          tx.oncomplete = () => res(r && "result" in r ? r.result : true);
+          tx.onerror = tx.onabort = () => res(undefined);
+        } catch (e) { res(undefined); }
+      }));
+    }
+    return {
+      open,
+      get: (s, k) => req(s, "readonly", (os) => os.get(k)),
+      put: (s, k, v) => req(s, "readwrite", (os) => os.put(v, k)),
+      putMany: (s, entries) => entries.length ? req(s, "readwrite", (os) => { entries.forEach(([k, v]) => os.put(v, k)); }) : Promise.resolve(true),
+      count: (s) => req(s, "readonly", (os) => os.count()),
+      clear: (stores) => Promise.all(stores.map((s) => req(s, "readwrite", (os) => os.clear()))),
+      getAll: (s) => open().then((d) => new Promise((res) => {
+        const out = new Map();
+        if (!d) return res(out);
+        try {
+          const c = d.transaction(s, "readonly").objectStore(s).openCursor();
+          c.onsuccess = () => { const cur = c.result; if (cur) { out.set(cur.key, cur.value); cur.continue(); } else res(out); };
+          c.onerror = () => res(out);
+        } catch (e) { res(out); }
+      }))
+    };
+  })();
+  const fresh = (rec, ttl) => rec && rec.ts && Date.now() - rec.ts < ttl;
+
+  /* ---------- dates ---------- */
+  function parseWDTime(s, p) {
+    const m = /^(-?\d+)-(\d\d)-(\d\d)/.exec(s);
+    return m ? { y: +m[1], m: +m[2], d: +m[3], p: +p } : null;
+  }
+  function pickDate(concat) {
+    if (!concat) return null;
+    const cands = concat.split(";").filter(Boolean).map((x) => {
+      const [t, p, r] = x.split("|");
+      const d = parseWDTime(t, p);
+      if (d) d.rank = /Preferred/.test(r) ? 2 : /Normal/.test(r) ? 1 : 0;
+      return d;
+    }).filter(Boolean);
+    if (!cands.length) return null;
+    cands.sort((a, b) => b.rank - a.rank || b.p - a.p);
+    const { y, m, d, p } = cands[0];
+    return { y, m, d, p };
+  }
+  function fmtDate(d) {
+    if (!d) return "";
+    if (d.y <= 0) return String(1 - d.y) + " BC";
+    if (d.p >= 11) return d.d + " " + MONTHS[d.m - 1] + " " + d.y;
+    if (d.p === 10) return MONTHS[d.m - 1] + " " + d.y;
+    if (d.p === 9) return String(d.y);
+    if (d.p === 8) return d.y + "s";
+    return "c. " + d.y;
+  }
+  function ageBetween(a, b) {
+    const by = b instanceof Date ? b.getFullYear() : b.y;
+    const bm = b instanceof Date ? b.getMonth() + 1 : b.m;
+    const bd = b instanceof Date ? b.getDate() : b.d;
+    let age = by - a.y;
+    const precise = a.p >= 11 && (b instanceof Date || b.p >= 11);
+    if (precise && (bm < a.m || (bm === a.m && bd < a.d))) age--;
+    return { age, approx: !precise };
+  }
+  const birthYear = (a) => (a.dob ? a.dob.y : a.listBorn);
+  const deathYear = (a) => (a.dod ? a.dod.y : a.listDied);
+
+  /* ---------- gender (Wikidata P21) ---------- */
+  const G_F = new Set(["Q6581072", "Q1052281", "Q15145779"]); // female, trans woman, cisgender woman
+  const G_M = new Set(["Q6581097", "Q2449503", "Q15145778"]); // male, trans man, cisgender man
+  function mapGender(concat) {
+    // only real items count: Wikidata's "unknown value" comes back as a blank-node id, not a Q-number
+    const ids = (concat || "").split(";").filter(Boolean).map((u) => u.split("/").pop()).filter((i) => /^Q\d+$/.test(i));
+    if (!ids.length) return "u";
+    if (ids.some((i) => !G_F.has(i) && !G_M.has(i))) return "x";
+    const f = ids.some((i) => G_F.has(i)), m = ids.some((i) => G_M.has(i));
+    return f && !m ? "f" : m && !f ? "m" : "u";
+  }
+
+  /* ---------- 1. the list ---------- */
+  const SKIP_TITLE = /^(?:(?:Dame|Sir|Lord|Lady|Baron|Baroness|Knight Bachelor|OBE|MBE|CBE|KBE|DBE|England|English people|English|Actor|Actress|United Kingdom|British|British people)$|Order of|Officer of|Member of|Commander of|Knight|Dame \(|List of|Category:)/i;
+  const STOP_IDS = /^(See_also|References|External_links|Notes|Further_reading|Sources)$/;
+  const EXCLUDE = ".navbox, .reflist, .references, .hatnote, .infobox, .thumb, figure, .mw-editsection, .toc, #toc, .sidebar, .metadata, sup, .shortdescription, .ambox, .portalbox, .side-box, .mw-heading, h2, h3, h4";
+
+  async function loadList() {
+    const url = WP + "?" + qs({ action: "parse", page: LIST_PAGE, prop: "text", format: "json", formatversion: 2, origin: "*", disablelimitreport: 1, disableeditsection: 1 });
+    const data = await getJSON(url, 3);
+    const html = data && data.parse && data.parse.text;
+    if (!html) throw new Error("No list returned");
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const root = doc.querySelector(".mw-parser-output") || doc.body;
+    let stop = null;
+    for (const h of root.querySelectorAll("h2")) {
+      if (STOP_IDS.test(h.id || "") || STOP_IDS.test((h.querySelector(".mw-headline") || {}).id || "")) { stop = h; break; }
+    }
+    const seen = new Set();
+    const out = [];
+    for (const a of root.querySelectorAll("a")) {
+      if (stop && !(stop.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING)) continue;
+      if (a.closest(EXCLUDE)) continue;
+      const href = a.getAttribute("href") || "";
+      const isRed = a.classList.contains("new") || /redlink=1/.test(href);
+      let title;
+      if (href.startsWith("/wiki/")) title = decodeURIComponent(href.slice(6).split("#")[0]).replace(/_/g, " ");
+      else if (isRed) { const m = /title=([^&]+)/.exec(href); title = m ? decodeURIComponent(m[1]).replace(/_/g, " ") : null; }
+      if (!title || title.includes(":")) continue;
+      const text = a.textContent.trim();
+      if (!text || SKIP_TITLE.test(title) || SKIP_TITLE.test(text)) continue;
+
+      let after = "", n = a.nextSibling, guard = 0;
+      while (n && guard++ < 4 && after.length < 80) {
+        if (n.nodeType === 1 && n.tagName === "A" && !SKIP_TITLE.test(n.textContent.trim())) break;
+        after += n.textContent; n = n.nextSibling;
+      }
+      const li = a.closest("li");
+      const paren = /\(([^()]*?\d{3,4}[^()]*?)\)/.exec(after);
+      if (!li && !paren) continue;
+      const firstInLi = li ? [...li.querySelectorAll("a")].find((x) => !SKIP_TITLE.test(x.textContent.trim()) && !x.closest("sup")) === a : false;
+      if (!paren && !firstInLi) continue;
+      const key = title.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      let listBorn = null, listDied = null;
+      if (paren) {
+        const yrs = paren[1].match(/\d{3,4}/g) || [];
+        if (/born/i.test(paren[1])) listBorn = +yrs[0];
+        else if (/^\s*died/i.test(paren[1])) listDied = +yrs[0];
+        else if (/fl\./i.test(paren[1])) { /* floruit: leave blank */ }
+        else if (yrs.length >= 2) { listBorn = +yrs[0]; listDied = +yrs[1]; }
+        else if (yrs.length === 1) listBorn = +yrs[0];
+      }
+      let honour = null;
+      const prevText = (a.previousSibling && a.previousSibling.nodeType === 3 ? a.previousSibling.textContent : "");
+      const hm = /\b(Dame|Sir)\s*$/.exec(prevText)
+        || (firstInLi && /^(Dame|Sir)\b/.exec(li.textContent.trim()))
+        || /^(Dame|Sir)\b/.exec(text);
+      if (hm) honour = hm[1];
+      const name = text.replace(/^(Sir|Dame)\s+/, "").replace(/\s*\((actor|actress)\)$/i, "");
+      const extra = /\b(OBE|MBE|CBE)\b/.exec(after);
+      if (extra && !honour) honour = extra[1];
+
+      out.push({ title, name, honour, isRed, listBorn, listDied });
+    }
+    return out;
+  }
+
+  /* ---------- rows ---------- */
+  function setPhoto(fig, state) {
+    const frame = fig.querySelector(".frame");
+    frame.className = "frame";
+    frame.textContent = "";
+    frame.removeAttribute("aria-label");
+    const old = fig.querySelector("figcaption"); if (old) old.remove();
+    if (state === "queued") { frame.classList.add("queued"); frame.textContent = "Queued"; return; }
+    if (state === "loading") { frame.classList.add("loading"); frame.setAttribute("aria-label", "Loading photo"); return; }
+    if (!state || state === "none") { frame.classList.add("empty"); frame.textContent = "No photo found"; return; }
+    const img = el("img", { src: state.src, alt: state.alt, decoding: "async", referrerpolicy: "no-referrer" });
+    img.addEventListener("error", () => setPhoto(fig, "none"), { once: true });
+    frame.append(state.href ? el("a", { href: state.href, target: "_blank", rel: "noopener", title: "View source and licence" }, img) : img);
+    if (state.caption) fig.append(el("figcaption", { text: state.caption }));
+  }
+
+  function buildRow(a) {
+    const nameLink = el("a", { class: "name", href: "https://en.wikipedia.org/wiki/" + encodeURIComponent(a.title.replace(/ /g, "_")), target: "_blank", rel: "noopener", text: a.name });
+    a.ui = { links: el("div", { class: "links" }), num: el("td", { class: "c-num" }) };
+    const nameCell = el("td", { class: "c-name" }, a.honour ? el("span", { class: "honour", text: a.honour }) : null, nameLink, a.ui.links);
+    a.ui.photo = el("figure", {}, el("div", { class: "frame" }));
+    setPhoto(a.ui.photo, "queued");
+    const waiting = () => el("span", { class: "pending", text: "Waiting…" });
+    a.ui.born = el("td", { "data-label": "Born" }, waiting());
+    a.ui.died = el("td", { "data-label": "Died" }, waiting());
+    a.ui.last = el("td", { class: "c-last", "data-label": "Last appearance" }, waiting());
+    a.ui.films = el("td", { class: "c-films", "data-label": "Top 5 films" }, waiting());
+    const tr = el("tr", {},
+      a.ui.num, nameCell,
+      el("td", { "data-label": "Photo" }, a.ui.photo),
+      a.ui.born, a.ui.died, a.ui.last, a.ui.films
+    );
+    tr.dataset.id = a.id;
+    a.tr = tr;
+    if (a.isRed) {
+      a.ui.links.append(el("span", { class: "pending", text: "No Wikipedia article" }));
+      a.films = []; a.last = null; a.creditsDone = true;
+      renderDates(a); renderCredits(a); markInfoReady(a);
+    }
+    return tr;
+  }
+
+  function setLoadingText(a) {
+    for (const k of ["born", "died", "last", "films"]) {
+      const c = a.ui[k];
+      if (c.firstChild && c.firstChild.textContent === "Waiting…") c.firstChild.textContent = "Loading…";
+    }
+  }
+
+  function renderLinks(a) {
+    const L = a.ui.links; L.textContent = "";
+    if (a.qid) L.append(el("a", { href: "https://www.wikidata.org/wiki/" + a.qid, target: "_blank", rel: "noopener", text: "Wikidata" }));
+    if (a.imdb) L.append(el("a", { href: "https://www.imdb.com/name/" + a.imdb + "/", target: "_blank", rel: "noopener", text: "IMDb" }));
+  }
+
+  function renderDates(a) {
+    const born = a.dob, died = a.dod;
+    const bTxt = born ? fmtDate(born) : (a.listBorn ? String(a.listBorn) : "");
+    const dTxt = died ? fmtDate(died) : (a.listDied ? String(a.listDied) : "");
+    const bornCell = a.ui.born, diedCell = a.ui.died;
+    bornCell.textContent = ""; diedCell.textContent = "";
+    bornCell.append(bTxt ? el("span", { class: "date", text: bTxt }) : el("span", { class: "pending", text: "Not recorded" }));
+    if (dTxt) {
+      diedCell.append(el("span", { class: "date", text: dTxt }));
+      if (born && died) { const g = ageBetween(born, died); diedCell.append(el("span", { class: "sub", text: (g.approx ? "aged about " : "aged ") + g.age })); }
+    } else if (bTxt) {
+      diedCell.append(el("span", { class: "living", text: "Living" }));
+      if (born && born.y > 1900) { const g = ageBetween(born, TODAY); bornCell.append(el("span", { class: "sub", text: (g.approx ? "about " : "") + g.age + " years old" })); }
+    } else diedCell.append(el("span", { class: "pending", text: "Not recorded" }));
+  }
+
+  function workLink(w, cls) {
+    return el("a", { class: cls, href: w.article || ("https://www.wikidata.org/wiki/" + w.qid), target: "_blank", rel: "noopener", text: w.label });
+  }
+
+  function renderCredits(a) {
+    const fc = a.ui.films, lc = a.ui.last;
+    fc.textContent = ""; lc.textContent = "";
+    if (a.creditsFailed) {
+      const msg = "Didn't load. Refresh to try again.";
+      fc.append(el("span", { class: "pending", text: msg })); lc.append(el("span", { class: "pending", text: msg }));
+      return;
+    }
+    if (a.last) {
+      lc.append(workLink(a.last, "last-title"), el("span", { class: "sub kind", text: [a.last.kind, a.last.year].filter(Boolean).join(" · ") }));
+    } else lc.append(el("span", { class: "pending", text: "No dated credits found" }));
+    if (!a.films || !a.films.length) { fc.append(el("span", { class: "pending", text: "No films found" })); return; }
+    const ol = el("ol", { class: "films" });
+    for (const f of a.films) ol.append(el("li", {}, el("span", {}, workLink(f), f.year ? el("span", { class: "yr", text: f.year }) : null)));
+    fc.append(ol);
+  }
+
+  function markInfoReady(a) { if (!a.infoDone) { a.infoDone = true; a._infoResolve(); } }
+
+  function removeActor(a) {
+    a.removed = true;
+    a.tr.remove();
+    if (a.slide) a.slide.remove();
+  }
+
+  /* ---------- 2. lookups for the selected letter ---------- */
+  const INFO_FIELDS = ["qid", "img", "human", "dob", "dod", "gender", "cat", "imdb", "films", "last"];
+
+  function applyCachedInfo(a, rec) {
+    INFO_FIELDS.forEach((k) => { a[k] = rec[k]; });
+    a.filmText = (a.films || []).map((f) => f.label.toLowerCase()).join(" ");
+    a.creditsDone = true; a.infoStarted = true;
+    if (a.human === false) { removeActor(a); markInfoReady(a); return; }
+    renderDates(a); renderLinks(a); renderCredits(a);
+    markInfoReady(a);
+  }
+
+  async function resolveArticles(batch) {
+    try {
+      const url = WP + "?" + qs({
+        action: "query", format: "json", formatversion: 2, origin: "*", redirects: 1,
+        prop: "pageprops|pageimages", ppprop: "wikibase_item", piprop: "thumbnail|name", pithumbsize: THUMB, pilimit: 50,
+        titles: batch.map((a) => a.title).join("|")
+      });
+      const d = await getJSON(url);
+      const q = (d && d.query) || {};
+      const norm = {}, redir = {}, byTitle = {};
+      (q.normalized || []).forEach((x) => (norm[x.from] = x.to));
+      (q.redirects || []).forEach((x) => (redir[x.from] = x.to));
+      (q.pages || []).forEach((p) => (byTitle[p.title] = p));
+      for (const a of batch) {
+        a.resolveOk = true;
+        const t1 = norm[a.title] || a.title;
+        const p = byTitle[redir[t1] || t1];
+        if (!p || p.missing) continue;
+        a.qid = p.pageprops && p.pageprops.wikibase_item;
+        if (p.thumbnail && p.pageimage) a.lead = { src: p.thumbnail.source, file: p.pageimage };
+      }
+    } catch (e) {
+      console.warn("articles", e);
+      batch.forEach((a) => (a.resolveOk = false));
+    }
+  }
+
+  const dateBlock = (P, v) => `OPTIONAL { ?item p:${P} ?${v}s . ?${v}s wikibase:rank ?${v}r ; psv:${P} ?${v}v . ?${v}v wikibase:timeValue ?${v}t ; wikibase:timePrecision ?${v}p . FILTER(?${v}r != wikibase:DeprecatedRank) BIND(CONCAT(STR(?${v}t),"|",STR(?${v}p),"|",STR(?${v}r)) AS ?${v}S) }`;
+
+  async function loadDetails(batch) {
+    const byQ = new Map(batch.map((a) => [a.qid, a]));
+    const q = `SELECT ?item ?human (GROUP_CONCAT(DISTINCT ?bS; separator=";") AS ?dobs) (GROUP_CONCAT(DISTINCT ?dS; separator=";") AS ?dods) (GROUP_CONCAT(DISTINCT STR(?g); separator=";") AS ?genders) (SAMPLE(?img) AS ?image) (SAMPLE(?cat) AS ?commonscat) (SAMPLE(?imdb) AS ?imdbid) WHERE {
+  VALUES ?item { ${batch.map((a) => "wd:" + a.qid).join(" ")} }
+  BIND(EXISTS { ?item wdt:P31 wd:Q5 } AS ?human)
+  ${dateBlock("P569", "b")}
+  ${dateBlock("P570", "d")}
+  OPTIONAL { ?item wdt:P21 ?g }
+  OPTIONAL { ?item wdt:P18 ?img }
+  OPTIONAL { ?item wdt:P373 ?cat }
+  OPTIONAL { ?item wdt:P345 ?imdb }
+} GROUP BY ?item ?human`;
+    let rows = null;
+    try { const d = await sparql(q); rows = (d && d.results && d.results.bindings) || []; } catch (e) { console.warn("details", e); }
+    if (!rows && batch.length > 5) { // a large batch can time out: retry in smaller pieces so dates and gender still arrive
+      for (const part of chunk(batch, Math.ceil(batch.length / 5))) await loadDetails(part);
+      return;
+    }
+    for (const r of rows || []) {
+      const a = byQ.get(r.item.value.split("/").pop()); if (!a) continue;
+      a.human = !r.human || r.human.value === "true";
+      a.dob = pickDate(r.dobs && r.dobs.value);
+      a.dod = pickDate(r.dods && r.dods.value);
+      a.gender = mapGender(r.genders && r.genders.value);
+      if (r.image) a.p18 = decodeURIComponent(r.image.value.split("/").pop());
+      if (r.commonscat) a.cat = r.commonscat.value;
+      if (r.imdbid && /^nm\d+$/.test(r.imdbid.value)) a.imdb = r.imdbid.value;
+    }
+    for (const a of batch) {
+      a.detailsOk = !!rows;
+      if (a.human === false) { removeActor(a); markInfoReady(a); continue; }
+      renderDates(a); renderLinks(a);
+    }
+  }
+
+  // Photo for each actor: Wikipedia's article image, else the Wikidata image. One Commons call per batch gets the photo's date.
+  const NOT_PORTRAIT = /signature|autograph|grave|tomb|headstone|memorial|plaque|poster|logo|star on|walk of fame|house|residence|birthplace|map|coat of arms|\.svg$|\.pdf$|\.ogg$|\.webm$|\.ogv$|\.tif/i;
+  function dtoYear(ii) {
+    const v = ii.extmetadata && ii.extmetadata.DateTimeOriginal && ii.extmetadata.DateTimeOriginal.value;
+    return v ? yearIn(String(v).replace(/<[^>]*>/g, " ")) : null;
+  }
+  async function fileInfo(names) {
+    const out = new Map();
+    if (!names.length) return out;
+    try {
+      const url = COMMONS + "?" + qs({
+        action: "query", format: "json", formatversion: 2, origin: "*",
+        titles: names.map((n) => "File:" + n.replace(/^File:/i, "")).join("|"),
+        prop: "imageinfo", iiprop: "url|extmetadata", iiurlwidth: THUMB, iiextmetadatafilter: "DateTimeOriginal", iiextmetadatamultilang: 0
+      });
+      const d = await getJSON(url, 2);
+      for (const p of (d && d.query && d.query.pages) || []) {
+        const ii = p.imageinfo && p.imageinfo[0];
+        if (ii) out.set(normFile(p.title), { year: dtoYear(ii), thumb: ii.thumburl || ii.url });
+      }
+    } catch (e) { /* the date caption is optional */ }
+    return out;
+  }
+  async function attachImages(list) {
+    const want = new Map();
+    for (const a of list) {
+      const f = a.lead ? a.lead.file : (a.p18 && !NOT_PORTRAIT.test(a.p18) ? a.p18 : null);
+      if (f) want.set(a, f);
+    }
+    const info = await fileInfo([...new Set(want.values())]);
+    for (const a of list) {
+      const f = want.get(a);
+      if (!f) { a.img = null; continue; }
+      const fi = info.get(normFile(f));
+      const by = birthYear(a), died = deathYear(a);
+      let year = fi ? fi.year : null;
+      if (year && ((by && year < by) || (died && year > died + 1))) year = null;
+      a.img = { file: f, url: a.lead ? a.lead.src : (fi && fi.thumb) || filePath(f, THUMB), year };
+    }
+  }
+
+  // Credits: top 5 films and the most recent dated screen credit, from one query
+  const FILM_T = new Set(["Q11424", "Q24869", "Q202866", "Q229390", "Q24862"]);
+  const SERIES_T = new Set(["Q5398426", "Q1259759", "Q581714", "Q526877", "Q15416", "Q3464665", "Q21664088"]);
+  function kindOf(types) {
+    if (types.some((t) => FILM_T.has(t))) return "Film";
+    if (types.includes("Q506240")) return "TV film";
+    if (types.includes("Q21191270")) return "TV episode";
+    if (types.some((t) => SERIES_T.has(t))) return "TV series";
+    return "";
+  }
+  async function loadCredits(batch) {
+    await Promise.all(chunk(batch, 10).map(async (part) => {
+      const q = `SELECT ?actor ?work ?label ?links ?article (GROUP_CONCAT(DISTINCT STR(?t); separator=";") AS ?types) (MIN(?pd) AS ?rel) (MAX(?re) AS ?roleEnd) (MAX(?se) AS ?seriesEnd) WHERE {
+  VALUES ?actor { ${part.map((a) => "wd:" + a.qid).join(" ")} }
+  ?work p:P161 ?st . ?st ps:P161 ?actor .
+  ?work wikibase:sitelinks ?links ; rdfs:label ?label . FILTER(LANG(?label) = "en")
+  OPTIONAL { ?st pq:P582 ?re }
+  OPTIONAL { ?work wdt:P31 ?t }
+  OPTIONAL { ?work wdt:P577 ?pd }
+  OPTIONAL { ?work wdt:P582 ?se }
+  OPTIONAL { ?article schema:about ?work ; schema:isPartOf <https://en.wikipedia.org/> . }
+} GROUP BY ?actor ?work ?label ?links ?article`;
+      let rows = null;
+      try { const d = await sparql(q); rows = (d && d.results && d.results.bindings) || []; } catch (e) { console.warn("credits", e); }
+      if (!rows && part.length > 1) { // prolific actors can make a query time out: retry in halves
+        const half = Math.ceil(part.length / 2);
+        await loadCredits(part.slice(0, half)); await loadCredits(part.slice(half));
+        return;
+      }
+      const per = new Map();
+      for (const r of rows || []) {
+        const aq = r.actor.value.split("/").pop(), wq = r.work.value.split("/").pop();
+        if (!per.has(aq)) per.set(aq, new Map());
+        const m = per.get(aq);
+        if (m.has(wq)) continue;
+        const types = (r.types ? r.types.value : "").split(";").filter(Boolean).map((u) => u.split("/").pop());
+        const kind = kindOf(types);
+        const rel = r.rel ? r.rel.value.slice(0, 10) : null;
+        const roleEnd = r.roleEnd ? r.roleEnd.value.slice(0, 10) : null;
+        const seriesEnd = r.seriesEnd ? r.seriesEnd.value.slice(0, 10) : null;
+        const when = roleEnd || (kind === "TV series" ? seriesEnd : rel);
+        m.set(wq, {
+          qid: wq, label: r.label.value, links: +r.links.value, kind,
+          year: rel ? +rel.slice(0, 4) : null,
+          when: when && when <= TODAY_ISO && !when.startsWith("-") ? when : null,
+          isSeriesEnd: !roleEnd && kind === "TV series",
+          article: r.article ? r.article.value : null
+        });
+      }
+      for (const a of part) {
+        a.creditsOk = !!rows; a.creditsFailed = !rows;
+        const works = per.get(a.qid) ? [...per.get(a.qid).values()] : [];
+        const thisYear = TODAY.getFullYear();
+        const diedISO = a.dod && a.dod.y > 0 ? String(a.dod.y + 1).padStart(4, "0") + "-12-31" : null;
+        works.forEach((w) => { if (w.when && w.isSeriesEnd && diedISO && w.when > diedISO) w.when = null; });
+        a.films = works.filter((w) => (w.kind === "Film" || w.kind === "TV film") && !(w.year && w.year > thisYear))
+          .sort((x, y) => y.links - x.links || (x.year || 9999) - (y.year || 9999)).slice(0, 5)
+          .map(({ qid, label, year, article }) => ({ qid, label, year, article }));
+        const dated = works.filter((w) => w.when).sort((x, y) => (x.when < y.when ? 1 : x.when > y.when ? -1 : y.links - x.links));
+        const L = dated[0];
+        a.last = L ? { qid: L.qid, label: L.label, kind: L.kind, year: +L.when.slice(0, 4), article: L.article } : null;
+        a.filmText = a.films.map((f) => f.label.toLowerCase()).join(" ") + " " + (a.last ? a.last.label.toLowerCase() : "");
+        a.creditsDone = true;
+        if (!a.removed) renderCredits(a);
+      }
+      refresh();
+    }));
+  }
+
+  function saveInfo(batch) {
+    if (!cacheAvailable) return;
+    const now = Date.now();
+    const entries = batch.filter((a) => a.resolveOk && (a.qid ? a.detailsOk && (a.human === false || a.creditsOk) : true))
+      .map((a) => { const rec = { ts: now }; INFO_FIELDS.forEach((k) => (rec[k] = a[k] === undefined ? null : a[k])); return [a.title, rec]; });
+    DB.putMany("info", entries);
+  }
+
+  async function processBatch(batch) {
+    batch.forEach(setLoadingText);
+    await resolveArticles(batch);
+    const withQ = batch.filter((a) => a.qid);
+    if (withQ.length) await loadDetails(withQ);
+    const alive = batch.filter((a) => !a.removed);
+    await attachImages(alive);
+    for (const a of alive) {
+      if (!a.qid) { a.films = []; a.last = null; a.creditsDone = true; a.creditsFailed = !a.resolveOk; renderDates(a); renderCredits(a); }
+      markInfoReady(a);
+    }
+    refresh();
+    const credit = alive.filter((a) => a.qid);
+    (credit.length ? loadCredits(credit) : Promise.resolve()).then(() => saveInfo(batch));
+  }
+
+  // Lookups run only for actors in scope: the selected letter, or names matching the search
+  const searchText = () => $("q").value.trim().toLowerCase();
+  function inScope(a) {
+    const q = searchText();
+    if (q) return a.name.toLowerCase().includes(q);
+    return letter === "all" || a.initial === letter;
+  }
+  let infoWorkers = 0;
+  const infoQueue = () => displayOrder.filter((a) => !a.isRed && !a.removed && !a.infoStarted && inScope(a));
+  function kickInfo() {
+    while (infoWorkers < 2 && infoQueue().length) {
+      infoWorkers++;
+      (async () => {
+        for (;;) {
+          const q = infoQueue();
+          if (!q.length) return;
+          const batch = q.slice(0, 50);
+          batch.forEach((a) => (a.infoStarted = true));
+          try { await processBatch(batch); } catch (e) { console.warn(e); batch.forEach(markInfoReady); }
+        }
+      })().finally(() => { infoWorkers--; refresh(); });
+    }
+  }
+
+  /* ---------- 3. photos: saved in the browser, shown one at a time in table order ---------- */
+  async function commonsFiles(cat) {
+    try {
+      const url = COMMONS + "?" + qs({
+        action: "query", format: "json", formatversion: 2, origin: "*",
+        generator: "categorymembers", gcmtitle: "Category:" + cat, gcmtype: "file", gcmlimit: 100,
+        prop: "imageinfo", iiprop: "url|extmetadata|mime|size", iiurlwidth: THUMB,
+        iiextmetadatafilter: "DateTimeOriginal", iiextmetadatamultilang: 0
+      });
+      const d = await getJSON(url, 3);
+      const out = [];
+      for (const p of (d && d.query && d.query.pages) || []) {
+        const name = p.title.replace(/^File:/, "");
+        const ii = p.imageinfo && p.imageinfo[0];
+        if (!ii || !/^image\/(jpeg|png|webp)$/.test(ii.mime) || NOT_PORTRAIT.test(name) || (ii.width && ii.width < 180)) continue;
+        out.push({ name, year: dtoYear(ii) || yearIn(name), thumb: ii.thumburl || ii.url });
+      }
+      return out;
+    } catch (e) { console.warn("commons", cat, e); return null; }
+  }
+  async function categoryPick(a) {
+    const files = await commonsFiles(a.cat || a.title);
+    if (!files || !files.length) return { pic: null, complete: files !== null };
+    const by = birthYear(a), died = deathYear(a);
+    const ok = (y) => y && (!by || y >= by) && (!died || y <= died + 1) && y <= TODAY.getFullYear();
+    const dated = files.filter((f) => ok(f.year)).sort((x, y) => y.year - x.year);
+    const f = dated[0] || files[0];
+    return { pic: { file: f.name, url: f.thumb, year: ok(f.year) ? f.year : null }, complete: true };
+  }
+
+  const srcCache = new Map();
+  function loadImage(url) {
+    if (!srcCache.has(url)) srcCache.set(url, loadImageInner(url));
+    return srcCache.get(url);
+  }
+  async function loadImageInner(url) {
+    if (!/^https?:/i.test(url)) return (await imageOK(url)) ? url : null; // a photo from this site's photos folder
+    let blob = cacheAvailable ? await DB.get("blobs", url) : null;
+    if (!blob) {
+      try {
+        const r = await fetchTimeout(url, 20000, { mode: "cors", credentials: "omit" });
+        if (r.ok) {
+          const b = await r.blob();
+          if (/^image\//.test(b.type)) { blob = b; if (cacheAvailable) DB.put("blobs", url, b); }
+        }
+      } catch (e) { /* fall back to loading the image directly */ }
+    }
+    const src = blob ? URL.createObjectURL(blob) : url;
+    if (await imageOK(src)) return src;
+    if (blob) { URL.revokeObjectURL(src); return (await imageOK(url)) ? url : null; }
+    return null;
+  }
+  function imageOK(src) {
+    return new Promise((res) => {
+      const img = new Image();
+      img.referrerPolicy = "no-referrer";
+      let done = false;
+      const fin = (v) => { if (!done) { done = true; clearTimeout(t); res(v); } };
+      const t = setTimeout(() => fin(false), 20000);
+      img.onload = () => fin(true);
+      img.onerror = () => fin(false);
+      img.src = src;
+    });
+  }
+
+  async function preparePhotos(a) {
+    try {
+      await a.infoReady;
+      if (a.removed || a.isRed) return {};
+      let pic = a.img;
+      if (!pic && a.qid) {
+        if (a.photoRec !== undefined) pic = a.photoRec;
+        else {
+          const r = await categoryPick(a);
+          pic = r.pic;
+          if (cacheAvailable && r.complete) DB.put("photos", a.title, { ts: Date.now(), pic });
+        }
+      }
+      const src = pic ? await loadImage(pic.url) : null;
+      return { pic, src };
+    } catch (e) { console.warn("photo", a.name, e); return {}; }
+  }
+
+  function presentPhoto(a, prep) {
+    const by = birthYear(a), p = prep.pic;
+    if (!prep.src) { setPhoto(a.ui.photo, "none"); return; }
+    setPhoto(a.ui.photo, {
+      src: prep.src, href: filePage(p.file, p.src || p.url), alt: a.name + (p.year ? " in " + p.year : ""),
+      caption: p.year ? p.year + (by ? ", age " + (p.year - by) : "") : "Date unknown"
+    });
+    addSlide(a, prep.src);
+  }
+
+  // The runner shows photos strictly in table order for the rows on screen, fetching a few ahead.
+  // A change of letter, filter or order interrupts the wait so the new rows go first.
+  let viewTick = () => {}, viewChanged = new Promise((r) => (viewTick = r));
+  function signalView() { const t = viewTick; viewChanged = new Promise((r) => (viewTick = r)); t(); }
+  let runnerActive = false;
+  const photoQueue = () => displayOrder.filter((a) => !a.removed && !a.photoShown && !a.tr.hidden);
+  async function photoRunner() {
+    if (runnerActive) return;
+    runnerActive = true;
+    try {
+      for (;;) {
+        const q = photoQueue();
+        if (!q.length) break;
+        for (const a of q.slice(0, LOOKAHEAD)) {
+          if (!a.photoPrep) { a.photoPrep = preparePhotos(a); if (!a.isRed) setPhoto(a.ui.photo, "loading"); }
+        }
+        const a = q[0];
+        const got = await Promise.race([a.photoPrep.then((p) => ({ p })), viewChanged.then(() => null)]);
+        if (!got) continue;
+        a.photoShown = true;
+        if (a.removed) continue;
+        presentPhoto(a, got.p);
+        refresh();
+      }
+    } finally {
+      runnerActive = false;
+      refresh();
+      renderCacheNote();
+    }
+  }
+
+  /* ---------- gallery carousel ---------- */
+  const galPrev = $("galPrev"), galNext = $("galNext"), galPlay = $("galPlay");
+  let playing = !REDUCED, galHover = false;
+
+  function addSlide(a, src) {
+    const btn = el("button", { type: "button", class: "slide", "aria-pressed": String(selectedId === a.id), title: "Show only " + a.name + " in the table" },
+      el("span", { class: "slide-photo" }, el("img", { src, alt: "", decoding: "async" })),
+      el("span", { class: "slide-name", text: a.name }));
+    btn.dataset.id = a.id;
+    btn.hidden = !a.filterOk;
+    btn.addEventListener("click", () => selectActor(a));
+    a.slide = btn;
+    let before = null;
+    for (const c of track.children) { const b = byId.get(+c.dataset.id); if (b && b.pos > a.pos) { before = c; break; } }
+    track.insertBefore(btn, before);
+    updateGallery();
+  }
+
+  // Selecting a face filters the table to that actor; selecting it again (or "Show everyone") clears it
+  function selectActor(a) {
+    selectedId = selectedId === a.id ? null : a.id;
+    if (selectedId) setPlaying(false);
+    applyViewNow();
+    if (!selectedId) return;
+    const box = document.querySelector(".table-scroll");
+    const top = box.getBoundingClientRect().top + window.scrollY - document.querySelector(".toolbar").offsetHeight - 8;
+    window.scrollTo({ top: Math.max(0, top), behavior: REDUCED ? "auto" : "smooth" });
+    a.tr.classList.remove("flash"); void a.tr.offsetWidth; a.tr.classList.add("flash");
+    setTimeout(() => a.tr.classList.remove("flash"), 2100);
+  }
+  function clearSelection() { if (selectedId != null) { selectedId = null; return true; } return false; }
+  $("pickClear").addEventListener("click", () => { clearSelection(); applyViewNow(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && clearSelection()) applyViewNow(); });
+
+  function updateGallery() {
+    const visible = track.querySelectorAll(".slide:not([hidden])").length;
+    $("galleryEmpty").hidden = visible > 0;
+    track.hidden = visible === 0;
+    const loading = photoQueue().length > 0;
+    $("galleryCount").textContent = visible ? visible + (visible === 1 ? " face" : " faces") + (loading ? " so far" : "") : "";
+    const q = searchText();
+    $("galleryTitle").textContent = q ? "Matching “" + $("q").value.trim() + "”" : letter === "all" ? "Faces, A to Z" : "Surnames in " + letter;
+    updateArrows();
+  }
+  function updateArrows() {
+    const max = track.scrollWidth - track.clientWidth;
+    galPrev.disabled = track.scrollLeft <= 2;
+    galNext.disabled = track.scrollLeft >= max - 2;
+  }
+  function slideStep() {
+    const s = track.querySelector(".slide:not([hidden])");
+    return s ? s.getBoundingClientRect().width + 12 : 124;
+  }
+  galPrev.addEventListener("click", () => track.scrollBy({ left: -Math.max(slideStep(), track.clientWidth - slideStep()) }));
+  galNext.addEventListener("click", () => track.scrollBy({ left: Math.max(slideStep(), track.clientWidth - slideStep()) }));
+  track.addEventListener("scroll", () => requestAnimationFrame(updateArrows), { passive: true });
+  window.addEventListener("resize", updateArrows);
+  track.addEventListener("pointerenter", () => (galHover = true));
+  track.addEventListener("pointerleave", () => (galHover = false));
+  track.addEventListener("focusin", () => (galHover = true));
+  track.addEventListener("focusout", () => (galHover = false));
+
+  function setPlaying(v) {
+    playing = v;
+    galPlay.setAttribute("aria-pressed", String(v));
+    galPlay.setAttribute("aria-label", v ? "Pause slideshow" : "Play slideshow");
+    $("galPlayIcon").innerHTML = v
+      ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+      : '<path d="M8 5.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 8 5.5z"/>';
+  }
+  galPlay.addEventListener("click", () => setPlaying(!playing));
+  setPlaying(playing);
+  setInterval(() => {
+    if (!playing || galHover || document.hidden || track.hidden) return;
+    const max = track.scrollWidth - track.clientWidth;
+    if (max <= 0) return;
+    if (track.scrollLeft >= max - 4) track.scrollTo({ left: 0 });
+    else track.scrollBy({ left: slideStep() });
+  }, 3500);
+
+  /* ---------- surname index ---------- */
+  function readHash() {
+    const h = decodeURIComponent(location.hash.slice(1)).trim();
+    if (/^[A-Za-z]$/.test(h)) return h.toUpperCase();
+    if (/^all$/i.test(h)) return "all";
+    if (/^other$/i.test(h)) return "#";
+    return null;
+  }
+  function buildAlpha() {
+    const counts = {};
+    actors.forEach((a) => (counts[a.initial] = (counts[a.initial] || 0) + 1));
+    const nav = $("alpha"); nav.textContent = "";
+    const keys = LETTERS.concat(counts["#"] ? ["#"] : []);
+    for (const L of keys) {
+      const n = counts[L] || 0;
+      const link = el("a", { href: "#" + (L === "#" ? "other" : L), text: L, title: n + (n === 1 ? " surname" : " surnames"), "data-letter": L });
+      if (!n) { link.classList.add("empty"); link.setAttribute("aria-disabled", "true"); link.tabIndex = -1; }
+      nav.append(link);
+    }
+    nav.append(el("a", { href: "#all", class: "all", text: "All", title: actors.length + " names", "data-letter": "all" }));
+    if (!counts[letter] && letter !== "all") letter = LETTERS.find((L) => counts[L]) || "all";
+    markAlpha();
+  }
+  function markAlpha() {
+    const nav = $("alpha");
+    nav.classList.toggle("searching", !!searchText());
+    for (const a of nav.querySelectorAll("a")) {
+      if (a.dataset.letter === letter) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    }
+    const cur = nav.querySelector('[aria-current="true"]');
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  window.addEventListener("hashchange", () => {
+    const L = readHash();
+    if (!L) return;
+    letter = L;
+    clearSelection();
+    if (searchText()) $("q").value = "";
+    markAlpha();
+    applyViewNow();
+    const top = document.querySelector(".gallery").getBoundingClientRect().top + window.scrollY - document.querySelector(".toolbar").offsetHeight;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: REDUCED ? "auto" : "smooth" });
+  });
+
+  /* ---------- search / filter / sort ---------- */
+  const isDead = (a) => !!(a.dod || a.listDied);
+  const isLiving = (a) => !isDead(a) && !!(a.dob || a.listBorn);
+  function birthKey(a) {
+    if (a.dob) return a.dob.y * 10000 + (a.dob.p >= 10 ? a.dob.m * 100 : 0) + (a.dob.p >= 11 ? a.dob.d : 0);
+    return a.listBorn ? a.listBorn * 10000 : null;
+  }
+
+  let viewTimer = null, statusTimer = null;
+  function applyView() { clearTimeout(viewTimer); viewTimer = setTimeout(applyViewNow, 150); }
+  function refresh() { clearTimeout(statusTimer); statusTimer = setTimeout(() => { updateStatus(); applyViewNow(); }, 250); }
+
+  let emptyRow = null;
+  function applyViewNow() {
+    const q = searchText();
+    const life = $("life").value, gender = genderValue, sort = $("sort").value;
+    if (selectedId != null && !byId.has(selectedId)) selectedId = null;
+    const picked = selectedId != null ? byId.get(selectedId) : null;
+    if (picked && picked.removed) selectedId = null;
+    const list = actors.filter((a) => !a.removed);
+    const bySurname = (x, y) => coll.compare(x.sortName, y.sortName);
+    if (sort === "first") list.sort((x, y) => coll.compare(x.name, y.name) || bySurname(x, y));
+    else if (sort === "old" || sort === "young") {
+      const dir = sort === "old" ? 1 : -1;
+      list.sort((x, y) => {
+        const kx = birthKey(x), ky = birthKey(y);
+        if (kx == null && ky == null) return bySurname(x, y);
+        if (kx == null) return 1;
+        if (ky == null) return -1;
+        return (kx - ky) * dir || bySurname(x, y);
+      });
+    } else list.sort(bySurname);
+    displayOrder = list;
+
+    let shown = 0, scopeCount = 0;
+    const scoped = [];
+    list.forEach((a, i) => {
+      a.pos = i;
+      let ok;
+      if (q) ok = a.name.toLowerCase().includes(q) || (a.filmText || "").includes(q);
+      else ok = letter === "all" || a.initial === letter;
+      if (ok) { scopeCount++; scoped.push(a); }
+      if (ok && gender !== "all") ok = (a.gender || "u") === gender;
+      if (ok && life === "living") ok = isLiving(a);
+      if (ok && life === "dead") ok = isDead(a);
+      a.filterOk = ok;                                   // the carousel follows the filters
+      const show = selectedId != null ? a.id === selectedId : ok; // the table also follows the selected face
+      a.tr.hidden = !show;
+      if (a.slide) { a.slide.hidden = !ok; a.slide.setAttribute("aria-pressed", String(a.id === selectedId)); }
+      if (show) a.ui.num.textContent = String(++shown);
+    });
+    const pk = selectedId != null ? byId.get(selectedId) : null;
+    $("pick").hidden = !pk;
+    if (pk) $("pickName").textContent = pk.name;
+
+    const order = list.map((a) => a.id).join(",");
+    if (order !== tbody.dataset.order) {
+      const frag = document.createDocumentFragment();
+      list.forEach((a) => frag.append(a.tr));
+      tbody.append(frag);
+      tbody.dataset.order = order;
+      const sfrag = document.createDocumentFragment();
+      list.forEach((a) => { if (a.slide) sfrag.append(a.slide); });
+      track.append(sfrag);
+    }
+    if (!emptyRow) emptyRow = el("tr", { class: "empty-row" }, el("td", { colspan: "7" }));
+    emptyRow.firstChild.textContent = scopeCount ? "No actors match these filters. Lookups for this letter may still be loading." : "No names match.";
+    if (!shown && actors.length) tbody.append(emptyRow); else emptyRow.remove();
+
+    const s = $("st-show"); s.textContent = "";
+    if (pk) s.append("Showing ", el("b", { text: "1 selected" }));
+    else s.append("Showing ", el("b", { text: String(shown) }), q ? " matches" : letter === "all" ? " of " + list.length : " in " + letter);
+    updateGenderCounts(scoped);
+    markAlpha();
+    updateGallery();
+    updateStatus(scoped);
+    signalView();
+    kickInfo();
+    photoRunner();
+  }
+
+  function updateGenderCounts(list) {
+    const counts = { all: list.length, f: 0, m: 0, x: 0, u: 0 };
+    list.forEach((a) => counts[a.gender || "u"]++);
+    // only the small count badges change, and only when the number does, so the buttons stay put under the cursor
+    for (const b of $("gender").querySelectorAll("button[data-v]")) {
+      const n = b.querySelector(".n"), t = String(counts[b.dataset.v]);
+      if (n.textContent !== t) n.textContent = t;
+    }
+  }
+  $("gender").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]");
+    if (!b) return;
+    genderValue = b.dataset.v;
+    for (const x of $("gender").querySelectorAll("button[data-v]")) x.setAttribute("aria-checked", String(x === b));
+    clearSelection();
+    applyViewNow();
+  });
+  $("gender").addEventListener("keydown", (e) => {
+    if (!["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    const bs = [...$("gender").querySelectorAll("button[data-v]")];
+    const i = bs.indexOf(document.activeElement);
+    if (i < 0) return;
+    const nb = bs[(i + (e.key === "ArrowRight" ? 1 : bs.length - 1)) % bs.length];
+    nb.focus(); nb.click(); e.preventDefault();
+  });
+
+  function updateStatus(scoped) {
+    const list = scoped || displayOrder.filter(inScope);
+    const total = list.length;
+    const setS = (id, label, n) => {
+      const s = $(id); s.textContent = "";
+      s.append(label + ": ", el("b", { text: total && n >= total ? "done" : n + " / " + total }));
+      s.classList.toggle("done", !!total && n >= total);
+    };
+    setS("st-det", "Dates", list.filter((a) => a.infoDone).length);
+    setS("st-film", "Credits", list.filter((a) => a.creditsDone).length);
+    setS("st-photo", "Photos", list.filter((a) => a.photoShown).length);
+  }
+
+  ["life", "sort"].forEach((id) => { $(id).addEventListener("change", applyView); $(id).addEventListener("input", applyView); });
+  $("q").addEventListener("input", () => { clearSelection(); applyView(); });
+
+  /* ---------- saved-data note ---------- */
+  function ago(ts) {
+    const days = Math.floor((Date.now() - ts) / DAY);
+    return days <= 0 ? "today" : days === 1 ? "yesterday" : days + " days ago";
+  }
+  const fmtDay = (ts) => new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  let noteBusy = false;
+  async function renderCacheNote() {
+    const n = $("cacheNote");
+    if (hosted) {
+      const parts = [siteCount + " names and " + sitePhotos + " photos from this site's saved copy" + (siteSavedAt ? ", updated " + fmtDay(siteSavedAt) : "") + "."];
+      if (deltaState === "checking") parts.push("Checking Wikipedia for names added since then…");
+      else if (deltaState === "none") parts.push("No names have been added on Wikipedia since then.");
+      else if (deltaState === "added") parts.push(deltaCount + (deltaCount === 1 ? " name has" : " names have") + " been added on Wikipedia since then, and only " + (deltaCount === 1 ? "that one is" : "those are") + " looked up live.");
+      else if (deltaState === "failed") parts.push("Couldn't reach Wikipedia to check for new names, so only the saved copy is shown.");
+      if (siteIncomplete) parts.push(siteIncomplete + (siteIncomplete === 1 ? " saved entry was" : " saved entries were") + " incomplete and " + (siteIncomplete === 1 ? "is" : "are") + " looked up live.");
+      n.textContent = parts.join(" ");
+      return;
+    }
+    if (!cacheAvailable) {
+      n.textContent = "This browser isn't letting the page save photos, so they download again on each visit. Chrome and Edge allow saving when the file is opened from your computer.";
+      return;
+    }
+    if (noteBusy) return;
+    noteBusy = true;
+    const count = (await DB.count("blobs")) || 0;
+    noteBusy = false;
+    const refreshBtn = el("button", { type: "button", class: "text-btn", text: "Refresh from Wikipedia" });
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true; refreshBtn.textContent = "Refreshing…";
+      await DB.clear(["meta", "info", "photos"]);
+      await DB.put("meta", "schema", SCHEMA);
+      location.reload();
+    });
+    const clearBtn = el("button", { type: "button", class: "text-btn", text: "Clear saved photos" });
+    clearBtn.addEventListener("click", async () => {
+      clearBtn.disabled = true;
+      await DB.clear(["blobs", "photos"]);
+      renderCacheNote();
+    });
+    n.textContent = "";
+    n.append(el("span", { text: count + (count === 1 ? " photo" : " photos") + " saved in this browser" + (listSavedAt ? "; names, dates and credits last fetched " + ago(listSavedAt) + "." : ".") }), refreshBtn, clearBtn);
+  }
+
+  /* ---------- boot ---------- */
+  function showError(msg) {
+    const n = $("notice");
+    n.hidden = false; n.textContent = "";
+    n.append(el("strong", { text: "Couldn't load the list. " }), msg, el("br"), el("button", { type: "button", text: "Try again" }));
+    n.querySelector("button").addEventListener("click", () => location.reload());
+  }
+  const setList = (txt, done) => { const s = $("st-list"); s.textContent = ""; s.append("List: ", el("b", { text: txt })); s.classList.toggle("done", !!done); };
+
+  // The saved copy made by sync.py. Missing when the page is opened as a file or hosted on its own.
+  async function loadManifest() {
+    try {
+      const r = await fetch("data/actors.json", { cache: "no-cache" });
+      if (!r.ok) return null;
+      const j = await r.json();
+      return j && Array.isArray(j.actors) && j.actors.length ? j : null;
+    } catch (e) { return null; }
+  }
+
+  function applyManifest(a, m) {
+    const rec = {};
+    INFO_FIELDS.forEach((k) => (rec[k] = m[k] === undefined ? null : m[k]));
+    rec.img = m.photo && m.photo.local ? { file: m.photo.file, url: m.photo.local, src: m.photo.src, year: m.photo.year || null } : null;
+    a.resolveOk = a.detailsOk = a.creditsOk = true;
+    applyCachedInfo(a, rec);
+    a.photoRec = null; // the sync script already searched Commons; no photo means none was found
+    a.fromSite = true;
+  }
+
+  let infoMap = new Map(), photoMap = new Map();
+  function addActors(rawList) {
+    const added = rawList.map((r) => {
+      const a = { title: r.title, name: r.name, honour: r.honour || null, isRed: !!r.isRed, listBorn: r.listBorn || null, listDied: r.listDied || null };
+      a.id = actors.length + 1;
+      a.sortName = sortName(a.name);
+      a.initial = initialOf(a.sortName);
+      a.infoReady = new Promise((res) => (a._infoResolve = res));
+      byId.set(a.id, a);
+      actors.push(a);
+      tbody.append(buildRow(a));
+      if (r._m && r._m.complete && !a.isRed) applyManifest(a, r._m);
+      else if (!a.isRed) {
+        const info = infoMap.get(a.title);
+        if (fresh(info, INFO_TTL)) { a.resolveOk = a.detailsOk = a.creditsOk = true; applyCachedInfo(a, info); }
+        const ph = photoMap.get(a.title);
+        if (fresh(ph, PHOTO_TTL)) a.photoRec = ph.pic || null;
+      }
+      return a;
+    });
+    return added;
+  }
+
+  async function boot() {
+    letter = readHash() || "A";
+    const [manifest, dbOK] = await Promise.all([loadManifest(), DB.open()]);
+    cacheAvailable = !!dbOK;
+    if (cacheAvailable && (await DB.get("meta", "schema")) !== SCHEMA) {
+      await DB.clear(["meta", "info", "photos", "blobs"]);
+      await DB.put("meta", "schema", SCHEMA);
+    }
+    if (cacheAvailable) [infoMap, photoMap] = await Promise.all([DB.getAll("info"), DB.getAll("photos")]);
+
+    if (manifest) {
+      hosted = true;
+      siteSavedAt = Date.parse(manifest.generated) || null;
+      const rows = manifest.actors.map((m) => ({ ...m, _m: m }));
+      addActors(rows);
+      siteCount = actors.length;
+      sitePhotos = manifest.actors.filter((m) => m.photo && m.photo.local).length;
+      siteIncomplete = manifest.actors.filter((m) => !m.complete && !m.isRed).length;
+      setList(actors.length + " names", true);
+      buildAlpha();
+      deltaState = "checking";
+      applyViewNow();
+      renderCacheNote();
+      checkForNewNames();
+      return;
+    }
+
+    let raw = null;
+    if (cacheAvailable) {
+      const rec = await DB.get("meta", "list");
+      if (fresh(rec, LIST_TTL) && Array.isArray(rec.actors) && rec.actors.length) { raw = rec.actors; listSavedAt = rec.ts; }
+    }
+    if (!raw) {
+      try { raw = await loadList(); }
+      catch (e) {
+        console.error(e);
+        showError("This page fetches its data live from Wikipedia, Wikidata and Wikimedia Commons, so it needs an internet connection and must be opened in a regular web browser.");
+        setList("failed");
+        renderCacheNote();
+        return;
+      }
+      listSavedAt = Date.now();
+      if (cacheAvailable) DB.put("meta", "list", { ts: listSavedAt, actors: raw });
+    }
+    addActors(raw);
+    setList(actors.length + " names", true);
+    buildAlpha();
+    applyViewNow();
+    renderCacheNote();
+  }
+
+  // Hosted mode: compare the live list with the saved copy and look up only names it doesn't have.
+  // The live list is remembered in this browser for a day, so repeat visits don't ask Wikipedia again.
+  async function checkForNewNames() {
+    let live = null;
+    if (cacheAvailable) {
+      const rec = await DB.get("meta", "list");
+      if (fresh(rec, DAY) && Array.isArray(rec.actors) && rec.actors.length) live = rec.actors;
+    }
+    if (!live) {
+      try { live = await loadList(); if (cacheAvailable) DB.put("meta", "list", { ts: Date.now(), actors: live }); }
+      catch (e) { console.warn("live list", e); deltaState = "failed"; renderCacheNote(); return; }
+    }
+    const known = new Set(actors.map((a) => a.title.toLowerCase()));
+    const fresh_ = live.filter((r) => !known.has(r.title.toLowerCase()));
+    deltaCount = fresh_.length;
+    deltaState = fresh_.length ? "added" : "none";
+    if (fresh_.length) {
+      addActors(fresh_);
+      setList(actors.length + " names", true);
+      buildAlpha();
+      applyViewNow();
+    }
+    renderCacheNote();
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
