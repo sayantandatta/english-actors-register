@@ -1,5 +1,5 @@
-# Runs sync.py every Monday (and whenever you press "Run workflow"),
-# saves any new photos and data back into the repository, then publishes the site to GitHub Pages.
+# Runs sync.py whenever you upload changes, every Monday, and whenever you press "Run workflow".
+# Saves any new photos and data back into the repository, then publishes the site to GitHub Pages.
 name: Sync from Wikipedia and publish
 
 on:
@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore: ["data/**", "photos/**"]
 
 permissions:
   contents: write
@@ -25,26 +26,32 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      # Always the newest code on main, even when a past run is re-run
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Fetch new names and missing photos
-        if: github.event_name != 'push'
         env:
           EAR_USER_AGENT: ${{ vars.EAR_USER_AGENT }}
         run: python3 sync.py
 
       - name: Save new data and photos to the repository
-        if: github.event_name != 'push'
+        env:
+          BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data photos
-          git diff --cached --quiet || git commit -m "Sync actors from Wikipedia"
-          git push
+          git add data
+          if [ -d photos ]; then git add photos; fi
+          if git diff --cached --quiet; then echo "Nothing new to save."; exit 0; fi
+          git commit -m "Sync actors from Wikipedia"
+          git pull --rebase -X theirs origin "$BRANCH"
+          git push origin "HEAD:$BRANCH"
 
       - uses: actions/configure-pages@v5
 

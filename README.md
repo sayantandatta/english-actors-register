@@ -19,9 +19,9 @@ GitHub hosts the site for free and also runs `sync.py` for you every week, so yo
 2. Upload everything in this folder to it, including the hidden `.github` folder. The easiest way is **Add file → Upload files** and dragging the folder's contents in. If the `.github` folder won't drag, create the file by hand with **Add file → Create new file**, naming it `.github/workflows/sync-and-publish.yml` and pasting its contents.
 3. In the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
 4. Open **Settings → Secrets and variables → Actions → Variables** and add a variable named `EAR_USER_AGENT` with a value like `EnglishActorsRegister/1.0 (https://yourname.github.io/english-actors-register; you@example.com)`.
-5. Open the **Actions** tab, choose **Sync from Wikipedia and publish**, and press **Run workflow**. The first run takes 10 to 20 minutes.
+5. The upload itself starts the first sync automatically (see the **Actions** tab). It takes 10 to 20 minutes. To start one by hand later, open **Actions → Sync from Wikipedia and publish** and press the green **Run workflow** button. Don't use **Re-run** on an old run, because that repeats the old code.
 
-Your site is then live at `https://<your-username>.github.io/english-actors-register/`. It updates itself every Monday, and you can press **Run workflow** any time to update it sooner.
+Your site is then live at `https://<your-username>.github.io/english-actors-register/`. It updates itself every Monday and after every upload, and you can press **Run workflow** any time to update it sooner.
 
 ## Hosting it anywhere else
 
