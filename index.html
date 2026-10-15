@@ -1171,6 +1171,10 @@ footer p { max-width: 80ch; }
   function updateGallery() {
     const visible = track.querySelectorAll(".slide:not([hidden])").length;
     $("galleryEmpty").hidden = visible > 0;
+    const anyShown = displayOrder.some((a) => !a.tr.hidden);
+    $("galleryEmpty").textContent = !anyShown && emptyMessage && !emptyMessage.startsWith("Still")
+      ? emptyMessage
+      : "Photos appear here as they load. Select a face to show only that actor in the table.";
     track.hidden = visible === 0;
     const loading = photoQueue().length > 0;
     $("galleryCount").textContent = visible ? visible + (visible === 1 ? " face" : " faces") + (loading ? " so far" : "") : "";
@@ -1270,7 +1274,23 @@ footer p { max-width: 80ch; }
   function applyView() { clearTimeout(viewTimer); viewTimer = setTimeout(applyViewNow, 150); }
   function refresh() { clearTimeout(statusTimer); statusTimer = setTimeout(() => { updateStatus(); applyViewNow(); }, 250); }
 
-  let emptyRow = null;
+  let emptyRow = null, emptyMessage = "";
+  const GENDER_WORD = { f: "women", m: "men", x: "non-binary actors", u: "actors with no gender recorded" };
+  function describeEmpty(scopeCount, q, gender, life) {
+    const place = q ? "matching “" + $("q").value.trim() + "”" : letter === "all" ? "on the list" : "with surnames in " + letter;
+    if (!scopeCount) return q ? "No names match “" + $("q").value.trim() + "”." : "No names " + place + ".";
+    const scope = displayOrder.filter(inScope);
+    if (scope.some((a) => !a.infoDone)) return "Still loading details for these actors…";
+    const who = gender !== "all" ? GENDER_WORD[gender] : "actors";
+    const state = life === "dead" ? " who have died" : life === "living" ? " who are living" : "";
+    return "There are no " + who + " " + place + state + ".";
+  }
+  function clearFilters() {
+    genderValue = "all";
+    for (const x of $("gender").querySelectorAll("button[data-v]")) x.setAttribute("aria-checked", String(x.dataset.v === "all"));
+    $("life").value = "all";
+    applyViewNow();
+  }
   function applyViewNow() {
     const q = searchText();
     const life = $("life").value, gender = genderValue, sort = $("sort").value;
@@ -1299,10 +1319,11 @@ footer p { max-width: 80ch; }
       let ok;
       if (q) ok = a.name.toLowerCase().includes(q) || (a.filmText || "").includes(q);
       else ok = letter === "all" || a.initial === letter;
-      if (ok) { scopeCount++; scoped.push(a); }
-      if (ok && gender !== "all") ok = (a.gender || "u") === gender;
+      if (ok) scopeCount++;
       if (ok && life === "living") ok = isLiving(a);
       if (ok && life === "dead") ok = isDead(a);
+      if (ok) scoped.push(a);                     // the gender buttons count these, so their numbers match what you'll get
+      if (ok && gender !== "all") ok = (a.gender || "u") === gender;
       a.filterOk = ok;                                   // the carousel follows the filters
       const show = selectedId != null ? a.id === selectedId : ok; // the table also follows the selected face
       a.tr.hidden = !show;
@@ -1324,7 +1345,13 @@ footer p { max-width: 80ch; }
       track.append(sfrag);
     }
     if (!emptyRow) emptyRow = el("tr", { class: "empty-row" }, el("td", { colspan: "7" }));
-    emptyRow.firstChild.textContent = scopeCount ? "No actors match these filters. Lookups for this letter may still be loading." : "No names match.";
+    emptyMessage = describeEmpty(scopeCount, q, gender, life);
+    const td = emptyRow.firstChild; td.textContent = emptyMessage;
+    if (scopeCount && (gender !== "all" || life !== "all")) {
+      const b = el("button", { type: "button", class: "text-btn", text: "Clear gender and Show filters", style: "margin-left:10px" });
+      b.addEventListener("click", clearFilters);
+      td.append(b);
+    }
     if (!shown && actors.length) tbody.append(emptyRow); else emptyRow.remove();
 
     const s = $("st-show"); s.textContent = "";
