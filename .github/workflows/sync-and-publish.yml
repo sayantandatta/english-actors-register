@@ -38,17 +38,20 @@ jobs:
       - name: Fetch new names and missing photos
         env:
           EAR_USER_AGENT: ${{ vars.EAR_USER_AGENT }}
+          EAR_SITE_URL: ${{ vars.EAR_SITE_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
         run: python3 sync.py
 
       - name: Save new data and photos to the repository
+        id: save
         env:
           BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data
-          if [ -d photos ]; then git add photos; fi
+          for f in photos index.html sitemap.xml; do if [ -e "$f" ]; then git add "$f"; fi; done
           if git diff --cached --quiet; then echo "Nothing new to save."; exit 0; fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           git commit -m "Sync actors from Wikipedia"
           git pull --rebase -X theirs origin "$BRANCH"
           git push origin "HEAD:$BRANCH"
@@ -61,3 +64,17 @@ jobs:
 
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      # Tells Bing and other IndexNow engines the page changed. Google doesn't use IndexNow; it reads the sitemap.
+      - name: Notify search engines
+        if: steps.save.outputs.changed == 'true'
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: 08cf7aa0b149436efd649fb189825e44
+          PAGE_URL: ${{ steps.deploy.outputs.page_url }}
+        run: |
+          case "$PAGE_URL" in */) ;; *) PAGE_URL="$PAGE_URL/" ;; esac
+          code=$(curl -s -o /dev/null -w "%{http_code}" -G "https://api.indexnow.org/indexnow" \
+            --data-urlencode "url=$PAGE_URL" --data-urlencode "key=$INDEXNOW_KEY" \
+            --data-urlencode "keyLocation=${PAGE_URL}${INDEXNOW_KEY}.txt")
+          echo "IndexNow replied $code (200 or 202 means accepted)"

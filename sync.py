@@ -31,6 +31,9 @@ import html as htmllib
 WP_API = os.environ.get("EAR_WP_API", "https://en.wikipedia.org/w/api.php")
 COMMONS_API = os.environ.get("EAR_COMMONS_API", "https://commons.wikimedia.org/w/api.php")
 WDQS = os.environ.get("EAR_WDQS", "https://query.wikidata.org/sparql")
+SITE_URL = os.environ.get("EAR_SITE_URL", "").strip()   # the published address, e.g. https://you.github.io/english-actors-register/
+if SITE_URL and not SITE_URL.endswith("/"):
+    SITE_URL += "/"
 USER_AGENT = os.environ.get("EAR_USER_AGENT", "EnglishActorsRegister/1.0 (set EAR_USER_AGENT to your contact details)")
 LIST_PAGE = "List_of_English_actors"
 THUMB = 120
@@ -499,6 +502,98 @@ def initial_of(name):
     return c if "A" <= c <= "Z" else "#"
 
 
+# ---------------------------------------------------------------- 4. search-engine files
+# Writes into index.html between marker comments, so the page itself stays hand-editable:
+#   <!-- seo:start --> ... <!-- seo:end -->        canonical address, sharing tags, structured data
+#   <!-- index:start --> ... <!-- index:end -->    a plain-HTML A–Z index of every actor, readable without JavaScript
+# and writes sitemap.xml. Search engines that don't run JavaScript still see every name this way.
+from html import escape as esc  # noqa: E402
+
+PAGE = os.path.join(HERE, "index.html")
+SITEMAP = os.path.join(HERE, "sitemap.xml")
+DESCRIPTION = ("A register of more than 700 actors born in England, past and present, with photographs, "
+               "dates of birth and death, birthplaces on a map, last screen appearances and best-known films.")
+
+
+def surname_key(a):
+    clean = re.sub(r"\([^)]*\)", " ", a["name"])
+    parts = re.sub(r"\b(OBE|MBE|CBE)\b", " ", clean).split() or [a["name"]]
+    import unicodedata
+    key = (parts[-1] + " " + " ".join(parts[:-1])).lower()
+    return unicodedata.normalize("NFD", key).encode("ascii", "ignore").decode()
+
+
+def describe(a):
+    born = (a.get("dob") or {}).get("y") or a.get("listBorn")
+    died = (a.get("dod") or {}).get("y") or a.get("listDied")
+    place = (a.get("birthPlace") or {}).get("name")
+    if born and died:
+        life = "%s–%s" % (born, died) + (", born in %s" % place if place else "")
+    elif born:
+        life = "born %s" % born + (" in %s" % place if place else "")
+    elif died:
+        life = "died %s" % died
+    else:
+        life = "born in %s" % place if place else ""
+    bits = [esc(life)] if life else []
+    films = [f["label"] for f in (a.get("films") or [])][:2]
+    if films:
+        bits.append("known for " + " and ".join("<i>%s</i>" % esc(f) for f in films))
+    last = a.get("last")
+    if last and (not films or last["label"] not in films):
+        bits.append("last seen in <i>%s</i>%s" % (esc(last["label"]), " (%s)" % last["year"] if last.get("year") else ""))
+    return "; ".join(bits)
+
+
+def build_index(out):
+    groups = {}
+    for a in sorted(out, key=surname_key):
+        groups.setdefault(initial_of(a["name"]), []).append(a)
+    sections = []
+    for letter in sorted(groups, key=lambda k: (k == "#", k)):
+        items = "".join(
+            '<li><a href="#actor-%s" data-title="%s">%s</a>%s</li>' % (
+                urllib.parse.quote(a["title"].replace(" ", "_")), esc(a["title"]), esc(a["name"]),
+                (" <span>%s</span>" % describe(a)) if describe(a) else "")
+            for a in groups[letter])
+        sections.append('<section><h3 id="index-%s">%s</h3><ul>%s</ul></section>' % (esc(letter), esc(letter), items))
+    return ('<details class="full-index" id="fullIndex"><summary>Full index: all %d actors, A to Z</summary>'
+            '<div class="full-index-body">%s</div></details>' % (len(out), "".join(sections)))
+
+
+def build_seo(generated):
+    if not SITE_URL:
+        return ""
+    data = {"@context": "https://schema.org", "@type": "CollectionPage", "name": "English Actors Register",
+            "url": SITE_URL, "description": DESCRIPTION, "inLanguage": "en", "dateModified": generated,
+            "about": {"@type": "Thing", "name": "English actors"}}
+    return ('<link rel="canonical" href="%s">\n<meta property="og:url" content="%s">\n'
+            '<script type="application/ld+json">%s</script>' % (esc(SITE_URL), esc(SITE_URL),
+                                                                json.dumps(data, ensure_ascii=False).replace("</", "<\\/")))
+
+
+def fill_region(html, name, body):
+    pat = re.compile(r"(<!-- %s:start -->)(.*?)(<!-- %s:end -->)" % (name, name), re.S)
+    return pat.sub(lambda m: m.group(1) + body + m.group(3), html, count=1) if pat.search(html) else html
+
+
+def write_site_files(out, generated):
+    if os.path.exists(PAGE):
+        with open(PAGE, encoding="utf-8") as fh:
+            page = fh.read()
+        new = fill_region(fill_region(page, "seo", build_seo(generated)), "index", build_index(out))
+        if new != page:
+            with open(PAGE, "w", encoding="utf-8") as fh:
+                fh.write(new)
+    if SITE_URL:
+        sitemap = ('<?xml version="1.0" encoding="UTF-8"?>\n'
+                   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                   '  <url><loc>%s</loc><lastmod>%s</lastmod></url>\n</urlset>\n' % (esc(SITE_URL), generated[:10]))
+        if not os.path.exists(SITEMAP) or open(SITEMAP, encoding="utf-8").read() != sitemap:
+            with open(SITEMAP, "w", encoding="utf-8") as fh:
+                fh.write(sitemap)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--full", action="store_true", help="re-fetch dates and credits for every actor")
@@ -508,12 +603,13 @@ def main():
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(PHOTO_DIR, exist_ok=True)
 
-    prev = {}
+    prev, old_actors, old_generated = {}, None, None
     if os.path.exists(MANIFEST):
         with open(MANIFEST, encoding="utf-8") as fh:
             old = json.load(fh)
         if old.get("schema") == SCHEMA:
             prev = {a["title"].lower(): a for a in old.get("actors", [])}
+            old_actors, old_generated = old.get("actors"), old.get("generated")
         else:
             log("Saved copy is from an older version; rebuilding it.")
 
@@ -589,12 +685,18 @@ def main():
         rec["v"] = DATA_VERSION if rec["isRed"] else a.get("v", 1)
         out.append(rec)
 
-    manifest = {"schema": SCHEMA, "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                "source": "https://en.wikipedia.org/wiki/" + LIST_PAGE, "thumbWidth": THUMB, "actors": out}
-    tmp = MANIFEST + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(manifest, fh, ensure_ascii=False, separators=(",", ":"))
-    os.replace(tmp, MANIFEST)
+    # Only rewrite the saved copy when something actually changed, so "generated" means "last changed"
+    # and a quiet weekly run makes no commit.
+    same = old_actors is not None and json.dumps(old_actors, sort_keys=True) == json.dumps(out, sort_keys=True)
+    generated = old_generated if same and old_generated else datetime.now(timezone.utc).isoformat(timespec="seconds")
+    if not same:
+        manifest = {"schema": SCHEMA, "generated": generated,
+                    "source": "https://en.wikipedia.org/wiki/" + LIST_PAGE, "thumbWidth": THUMB, "actors": out}
+        tmp = MANIFEST + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(manifest, fh, ensure_ascii=False, separators=(",", ":"))
+        os.replace(tmp, MANIFEST)
+    write_site_files(out, generated)
 
     pruned = 0
     if args.prune:

@@ -23,6 +23,17 @@ GitHub hosts the site for free and also runs `sync.py` for you every week, so yo
 
 Your site is then live at `https://<your-username>.github.io/english-actors-register/`. It updates itself every Monday and after every upload, and you can press **Run workflow** any time to update it sooner.
 
+## Getting found by search engines
+
+Each sync also writes the pieces search engines look for: a plain-HTML index of every actor at the bottom of the page (readable without JavaScript), a page description and canonical address, structured data, and `sitemap.xml`. When something changes, the workflow tells Bing and other IndexNow engines straight away, using the key file in the top folder (a long name ending in `.txt`; leave it in place).
+
+To register the site (once):
+
+1. **Google:** open Google Search Console, add a **URL prefix** property for your site address, and verify it. The simplest way is to choose **HTML file**, download the small `google….html` file and upload it to the top folder of this repository. Then open **Sitemaps** and submit `sitemap.xml`. Use **URL Inspection → Request indexing** to ask for a first crawl.
+2. **Bing:** open Bing Webmaster Tools and choose **Import from Google Search Console**. This verifies the site and copies the sitemap, and it also covers Yahoo and DuckDuckGo, which use Bing's index.
+
+If you use your own domain, set an Actions variable named `EAR_SITE_URL` to the full address (ending in `/`).
+
 ## Hosting it anywhere else
 
 1. Run the sync once, on your computer or on the server:

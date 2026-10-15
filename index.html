@@ -3,7 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>English Actors Register</title>
+<title>English Actors Register – photos, birthplaces and best-known films</title>
+<meta name="description" content="A register of more than 700 actors born in England, past and present, with photographs, dates of birth and death, birthplaces on a map, last screen appearances and best-known films.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#7A1E36">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="English Actors Register">
+<meta property="og:title" content="English Actors Register">
+<meta property="og:description" content="More than 700 actors born in England: photographs, dates, birthplaces on a map, last screen appearances and best-known films.">
+<meta name="twitter:card" content="summary">
+<!-- seo:start --><!-- seo:end -->
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -269,6 +278,16 @@ ol.films a { text-decoration: none; }
 ol.films a:hover { text-decoration: underline; }
 ol.films .yr { font: 12px var(--font-data); color: var(--muted); margin-left: 4px; }
 
+.full-index { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
+.full-index summary { cursor: pointer; font: 400 22px/1.2 var(--font-display); padding: 6px 0; }
+.full-index summary:hover { color: var(--accent); }
+.full-index-body { columns: 3 300px; column-gap: 32px; margin-top: 12px; }
+.full-index section { break-inside: avoid-column; }
+.full-index h3 { font: 500 11px/1 var(--font-data); letter-spacing: .14em; color: var(--accent); margin: 14px 0 6px; }
+.full-index ul { list-style: none; margin: 0; padding: 0; }
+.full-index li { font-size: 13px; line-height: 1.4; margin-bottom: 5px; color: var(--muted); break-inside: avoid; }
+.full-index li a { color: var(--ink); text-decoration: none; font-weight: 500; }
+.full-index li a:hover { color: var(--accent); text-decoration: underline; }
 footer { padding-block: 0 40px; color: var(--muted); font-size: 13px; }
 footer p { max-width: 80ch; }
 
@@ -413,6 +432,7 @@ footer p { max-width: 80ch; }
         <tbody id="rows"></tbody>
       </table>
     </div>
+    <!-- index:start --><!-- index:end -->
   </div>
 </main>
 
@@ -1579,6 +1599,31 @@ footer p { max-width: 80ch; }
     if (lmap) drawDots();
   });
 
+  /* ---------- full A–Z index and #actor- links ---------- */
+  function actorByTitle(t) {
+    const k = (t || "").replace(/_/g, " ").toLowerCase();
+    return actors.find((a) => !a.removed && a.title.toLowerCase() === k);
+  }
+  function showActorByTitle(t) {
+    const a = actorByTitle(t);
+    if (!a) return false;
+    selectedId = null;
+    selectActor(a);
+    return true;
+  }
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest(".full-index a[data-title]");
+    if (!link) return;
+    e.preventDefault();
+    showActorByTitle(link.dataset.title);
+  });
+  function readActorHash() {
+    const h = location.hash.slice(1);
+    if (!/^actor-/.test(h)) return null;
+    try { return decodeURIComponent(h.slice(6)); } catch (e) { return null; }
+  }
+  window.addEventListener("hashchange", () => { const t = readActorHash(); if (t) showActorByTitle(t); });
+
   /* ---------- saved-data note ---------- */
   function ago(ts) {
     const days = Math.floor((Date.now() - ts) / DAY);
@@ -1697,6 +1742,7 @@ footer p { max-width: 80ch; }
       buildAlpha();
       deltaState = "checking";
       applyViewNow();
+      if (readActorHash()) showActorByTitle(readActorHash());
       renderCacheNote();
       checkForNewNames();
       return;
