@@ -35,6 +35,7 @@ USER_AGENT = os.environ.get("EAR_USER_AGENT", "EnglishActorsRegister/1.0 (set EA
 LIST_PAGE = "List_of_English_actors"
 THUMB = 120
 SCHEMA = 3
+DATA_VERSION = 2            # bump when actors need new fields; their photos are kept
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(HERE, "data")
@@ -267,8 +268,17 @@ def map_gender(concat):
     return "f" if f and not m else "m" if m and not f else "u"
 
 
+def birth_place(name, coord):
+    """Wikidata coordinates come as "Point(longitude latitude)"."""
+    m = re.match(r"^Point\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s*\)$", coord or "")
+    if not name and not m:
+        return None
+    return {"name": name, "lat": round(float(m.group(2)), 4) if m else None,
+            "lon": round(float(m.group(1)), 4) if m else None}
+
+
 def load_details(batch):
-    q = """SELECT ?item ?human (GROUP_CONCAT(DISTINCT ?bS; separator=";") AS ?dobs) (GROUP_CONCAT(DISTINCT ?dS; separator=";") AS ?dods) (GROUP_CONCAT(DISTINCT STR(?g); separator=";") AS ?genders) (SAMPLE(?img) AS ?image) (SAMPLE(?cat) AS ?commonscat) (SAMPLE(?imdb) AS ?imdbid) WHERE {
+    q = """SELECT ?item ?human (GROUP_CONCAT(DISTINCT ?bS; separator=";") AS ?dobs) (GROUP_CONCAT(DISTINCT ?dS; separator=";") AS ?dods) (GROUP_CONCAT(DISTINCT STR(?g); separator=";") AS ?genders) (SAMPLE(?img) AS ?image) (SAMPLE(?cat) AS ?commonscat) (SAMPLE(?imdb) AS ?imdbid) (SAMPLE(?bpName) AS ?birthName) (SAMPLE(?bpCoord) AS ?birthCoord) WHERE {
   VALUES ?item { %s }
   BIND(EXISTS { ?item wdt:P31 wd:Q5 } AS ?human)
   %s
@@ -277,6 +287,9 @@ def load_details(batch):
   OPTIONAL { ?item wdt:P18 ?img }
   OPTIONAL { ?item wdt:P373 ?cat }
   OPTIONAL { ?item wdt:P345 ?imdb }
+  OPTIONAL { ?item wdt:P19 ?bp .
+             OPTIONAL { ?bp wdt:P625 ?bpCoord }
+             OPTIONAL { ?bp rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
 } GROUP BY ?item ?human""" % (" ".join("wd:" + a["qid"] for a in batch), date_block("P569", "b"), date_block("P570", "d"))
     rows = sparql(q)
     if rows is None:
@@ -299,6 +312,7 @@ def load_details(batch):
             a["cat"] = r["commonscat"]["value"]
         if r.get("imdbid") and re.match(r"^nm\d+$", r["imdbid"]["value"]):
             a["imdb"] = r["imdbid"]["value"]
+        a["birthPlace"] = birth_place(r.get("birthName", {}).get("value"), r.get("birthCoord", {}).get("value"))
     for a in batch:
         a["_detailsOk"] = True
 
@@ -473,7 +487,7 @@ def download_photo(a, pic, prev_photo):
 
 # ---------------------------------------------------------------- main
 PUBLIC = ["title", "name", "honour", "isRed", "listBorn", "listDied", "qid", "human", "dob", "dod", "gender",
-          "cat", "imdb", "films", "last"]
+          "cat", "imdb", "films", "last", "birthPlace"]
 
 
 def initial_of(name):
@@ -512,7 +526,7 @@ def main():
     for r in listed:
         p = prev.get(r["title"].lower())
         in_letters = not letters or initial_of(r["name"]) in letters
-        needs = in_letters and (args.full or not p or not p.get("complete")
+        needs = in_letters and (args.full or not p or not p.get("complete") or p.get("v", 1) < DATA_VERSION
                                 or (p.get("photo") and not os.path.exists(os.path.join(HERE, p["photo"].get("local") or "~missing"))))
         if needs:
             a = dict(r)
@@ -560,6 +574,7 @@ def main():
                 a["complete"] = True
             else:
                 a["complete"] = bool(a.get("_detailsOk") and a.get("_creditsOk") and searched)
+            a["v"] = DATA_VERSION if a["complete"] else 1
             a["fetched"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     out = []
@@ -571,6 +586,7 @@ def main():
         rec["photo"] = a.get("photo")
         rec["complete"] = bool(a.get("complete")) or rec["isRed"]
         rec["fetched"] = a.get("fetched")
+        rec["v"] = DATA_VERSION if rec["isRed"] else a.get("v", 1)
         out.append(rec)
 
     manifest = {"schema": SCHEMA, "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),

@@ -23,6 +23,8 @@
   --font-display: "Libre Caslon Display", "Big Caslon", "Book Antiqua", Georgia, serif;
   --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --dot: #1f9d4c;
+  --dot-edge: #0f5a2a;
   --photo-w: 72px;
   --slide-w: 112px;
 }
@@ -140,6 +142,36 @@ input[type="search"], select {
 .status b { color: var(--ink); font-weight: 500; }
 .status .done b { color: var(--ok); }
 
+/* ---------- birthplace map ---------- */
+.map-btn {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-end; cursor: pointer;
+  font: 500 13px/1 var(--font-body); color: var(--accent-ink); background: var(--accent);
+  border: 1px solid var(--accent); border-radius: 999px; padding: 9px 14px;
+}
+.map-btn:hover { filter: brightness(1.08); }
+.map-btn .pin { width: 10px; height: 10px; border-radius: 50%; background: var(--dot); border: 1.5px solid var(--accent-ink); }
+dialog.map-dlg {
+  width: min(1100px, calc(100vw - 32px)); height: min(820px, calc(100vh - 48px)); max-width: none; max-height: none;
+  padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink);
+  box-shadow: 0 20px 60px rgb(0 0 0 / .35);
+}
+dialog.map-dlg[open] { display: flex; flex-direction: column; }
+dialog.map-dlg::backdrop { background: rgb(10 12 16 / .55); }
+.map-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 16px; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+.map-head h2 { font: 400 26px/1.1 var(--font-display); margin: 4px 0 4px; }
+.map-sub { margin: 0; font-size: 13px; color: var(--muted); max-width: 70ch; }
+.map-sub .key { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--dot); border: 1px solid var(--dot-edge); vertical-align: -1px; margin-right: 5px; }
+.map-tools { display: flex; align-items: center; gap: 10px; }
+.map { flex: 1; min-height: 0; background: var(--paper); }
+.map-msg { display: grid; place-items: center; height: 100%; color: var(--muted); padding: 20px; text-align: center; }
+.leaflet-popup-content { margin: 12px 14px; font: 13px/1.4 var(--font-body); }
+.pop-title { font: 400 17px/1.2 var(--font-display); margin: 0 0 2px; color: #15181E; }
+.pop-count { font: 11px var(--font-data); color: #5B6271; margin-bottom: 6px; }
+.pop-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }
+.pop-list button { background: none; border: 0; padding: 3px 0; font: inherit; color: #7A1E36; cursor: pointer; text-align: left; }
+.pop-list button:hover { text-decoration: underline; }
+.pop-list .yr { color: #5B6271; font: 11px var(--font-data); margin-left: 4px; }
+
 /* ---------- gallery carousel ---------- */
 .gallery { padding-block: 18px 6px; }
 .gallery-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; margin-bottom: 10px; }
@@ -203,6 +235,7 @@ tbody tr.flash td { animation: flash 2s ease; }
 .links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 10px; font: 12px var(--font-data); }
 .links a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
 .links a:hover { color: var(--accent); border-color: var(--accent); }
+.links:empty { display: none; }
 
 figure { margin: 0; width: var(--photo-w); }
 .frame {
@@ -275,9 +308,9 @@ footer p { max-width: 80ch; }
 
 <header class="masthead">
   <div class="wrap">
-    <div class="eyebrow">Wikipedia · List of English actors</div>
+    <div class="eyebrow">England · Stage and screen</div>
     <h1>English Actors Register</h1>
-    <p class="lede">Every name on Wikipedia's <a href="https://en.wikipedia.org/wiki/List_of_English_actors" target="_blank" rel="noopener">List of English actors</a>, with dates from Wikidata, a photograph from Wikimedia Commons, each actor's last appearance and their five best-known films. Choose a letter to load actors by surname.</p>
+    <p class="lede">Hundreds of actors born in England, past and present, with their dates, a photograph, their last screen appearance and their five best-known films. Choose a letter to browse by surname, or open the map to see where they were born.</p>
     <p class="cache-note" id="cacheNote">Checking for photos saved in this browser…</p>
     <div class="notice" id="notice" hidden></div>
   </div>
@@ -321,6 +354,7 @@ footer p { max-width: 80ch; }
           <option value="young">Born, latest first</option>
         </select>
       </div>
+      <button type="button" class="map-btn" id="mapOpen"><span class="pin" aria-hidden="true"></span>Show map</button>
       <div class="pick" id="pick" hidden>
         <span>Showing only <b id="pickName"></b></span>
         <button type="button" class="text-btn" id="pickClear">Show everyone</button>
@@ -382,11 +416,31 @@ footer p { max-width: 80ch; }
   </div>
 </main>
 
+<dialog class="map-dlg" id="mapDlg" aria-labelledby="mapTitle">
+  <div class="map-head">
+    <div>
+      <div class="eyebrow">Birthplaces</div>
+      <h2 id="mapTitle">Where they were born</h2>
+      <p class="map-sub" id="mapSub"></p>
+    </div>
+    <div class="map-tools">
+      <div class="seg" id="mapScope" role="radiogroup" aria-label="Which actors to map">
+        <button type="button" role="radio" aria-checked="true" data-v="filtered">Current selection <span class="n"></span></button>
+        <button type="button" role="radio" aria-checked="false" data-v="all">Everyone <span class="n"></span></button>
+      </div>
+      <button type="button" class="icon-btn" id="mapClose" aria-label="Close map">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="map" id="map"></div>
+</dialog>
+
 <footer>
   <div class="wrap">
-    <p>Sources: names from Wikipedia; dates, gender, IMDb IDs and screen credits from Wikidata; photographs from Wikimedia Commons (click a photo in the table for its licence and photographer). The photo is the image Wikipedia uses for the actor's article, or failing that the most recent dated photo in their Commons category. Unreleased films are left out. Films are ranked by how many language editions of Wikipedia cover them, which tracks how widely known a film is.</p>
-    <p>Last appearance is the most recent dated screen credit Wikidata lists for the actor: a film or episode by its original release, or a TV series by when the actor's role ended (or, failing that, when the series ended, ignoring series that ran on after the actor's death). Long-running series still on air with no recorded end are left out, and Wikidata's credits are incomplete for many TV and stage actors.</p>
-    <p>When this page is hosted next to a saved copy (a <code>data</code> folder and a <code>photos</code> folder made by the sync script), it reads names, dates, credits and photos from there and asks Wikipedia only for names added since the copy was made. Opened on its own, it looks up only the selected letter, loads photos one actor at a time in the table's order, and keeps photos in this browser for 30 days and names, dates and credits for 7 days.</p>
+    <p>Names, dates, birthplaces and screen credits are compiled from public reference data. Photographs come from Wikimedia Commons: click a photo in the table to see its photographer and licence. Films are ranked by how widely they are written about across languages, which tracks how well known a film is. Unreleased films are left out.</p>
+    <p>Last appearance is the most recent dated screen credit on record for the actor: a film or episode by its original release, or a TV series by when the actor's role ended (or, failing that, when the series ended, ignoring series that ran on after the actor's death). Long-running series still on air with no recorded end are left out, and records are incomplete for many TV and stage actors. The map shows each actor's place of birth where the records give one with map coordinates.</p>
+    <p>When this page is hosted next to a saved copy (a <code>data</code> folder and a <code>photos</code> folder made by the sync script), it reads names, dates, credits and photos from there and checks the source list only for names added since the copy was made. Opened on its own, it looks up only the selected letter, loads photos one actor at a time in the table's order, and keeps photos in this browser for 30 days and names, dates and credits for 7 days.</p>
   </div>
 </footer>
 
@@ -398,7 +452,7 @@ footer p { max-width: 80ch; }
   const COMMONS = "https://commons.wikimedia.org/w/api.php";
   const WDQS = "https://query.wikidata.org/sparql";
   const LIST_PAGE = "List_of_English_actors";
-  const SCHEMA = 3;                          // bump to discard data saved by older versions of this page
+  const SCHEMA = 4;                          // bump to discard data saved by older versions of this page
   const DAY = 864e5, LIST_TTL = 7 * DAY, INFO_TTL = 7 * DAY, PHOTO_TTL = 30 * DAY;
   const THUMB = 120;                         // smallest standard Wikimedia thumbnail that still reads as a portrait
   const LOOKAHEAD = 5;
@@ -711,7 +765,7 @@ footer p { max-width: 80ch; }
     tr.dataset.id = a.id;
     a.tr = tr;
     if (a.isRed) {
-      a.ui.links.append(el("span", { class: "pending", text: "No Wikipedia article" }));
+      a.ui.links.append(el("span", { class: "pending", text: "No further details" }));
       a.films = []; a.last = null; a.creditsDone = true;
       renderDates(a); renderCredits(a); markInfoReady(a);
     }
@@ -727,8 +781,7 @@ footer p { max-width: 80ch; }
 
   function renderLinks(a) {
     const L = a.ui.links; L.textContent = "";
-    if (a.qid) L.append(el("a", { href: "https://www.wikidata.org/wiki/" + a.qid, target: "_blank", rel: "noopener", text: "Wikidata" }));
-    if (a.imdb) L.append(el("a", { href: "https://www.imdb.com/name/" + a.imdb + "/", target: "_blank", rel: "noopener", text: "IMDb" }));
+    // no outside-site links under the name; the name itself links to the actor's reference page
   }
 
   function renderDates(a) {
@@ -777,7 +830,7 @@ footer p { max-width: 80ch; }
   }
 
   /* ---------- 2. lookups for the selected letter ---------- */
-  const INFO_FIELDS = ["qid", "img", "human", "dob", "dod", "gender", "cat", "imdb", "films", "last"];
+  const INFO_FIELDS = ["qid", "img", "human", "dob", "dod", "gender", "cat", "imdb", "films", "last", "birthPlace"];
 
   function applyCachedInfo(a, rec) {
     INFO_FIELDS.forEach((k) => { a[k] = rec[k]; });
@@ -817,9 +870,14 @@ footer p { max-width: 80ch; }
 
   const dateBlock = (P, v) => `OPTIONAL { ?item p:${P} ?${v}s . ?${v}s wikibase:rank ?${v}r ; psv:${P} ?${v}v . ?${v}v wikibase:timeValue ?${v}t ; wikibase:timePrecision ?${v}p . FILTER(?${v}r != wikibase:DeprecatedRank) BIND(CONCAT(STR(?${v}t),"|",STR(?${v}p),"|",STR(?${v}r)) AS ?${v}S) }`;
 
+  function birthPlace(name, coord) { // coordinates arrive as "Point(longitude latitude)"
+    const m = /^Point\(\s*(-?[\d.]+)\s+(-?[\d.]+)\s*\)$/.exec(coord || "");
+    if (!name && !m) return null;
+    return { name: name || null, lat: m ? +(+m[2]).toFixed(4) : null, lon: m ? +(+m[1]).toFixed(4) : null };
+  }
   async function loadDetails(batch) {
     const byQ = new Map(batch.map((a) => [a.qid, a]));
-    const q = `SELECT ?item ?human (GROUP_CONCAT(DISTINCT ?bS; separator=";") AS ?dobs) (GROUP_CONCAT(DISTINCT ?dS; separator=";") AS ?dods) (GROUP_CONCAT(DISTINCT STR(?g); separator=";") AS ?genders) (SAMPLE(?img) AS ?image) (SAMPLE(?cat) AS ?commonscat) (SAMPLE(?imdb) AS ?imdbid) WHERE {
+    const q = `SELECT ?item ?human (GROUP_CONCAT(DISTINCT ?bS; separator=";") AS ?dobs) (GROUP_CONCAT(DISTINCT ?dS; separator=";") AS ?dods) (GROUP_CONCAT(DISTINCT STR(?g); separator=";") AS ?genders) (SAMPLE(?img) AS ?image) (SAMPLE(?cat) AS ?commonscat) (SAMPLE(?imdb) AS ?imdbid) (SAMPLE(?bpName) AS ?birthName) (SAMPLE(?bpCoord) AS ?birthCoord) WHERE {
   VALUES ?item { ${batch.map((a) => "wd:" + a.qid).join(" ")} }
   BIND(EXISTS { ?item wdt:P31 wd:Q5 } AS ?human)
   ${dateBlock("P569", "b")}
@@ -828,6 +886,9 @@ footer p { max-width: 80ch; }
   OPTIONAL { ?item wdt:P18 ?img }
   OPTIONAL { ?item wdt:P373 ?cat }
   OPTIONAL { ?item wdt:P345 ?imdb }
+  OPTIONAL { ?item wdt:P19 ?bp .
+             OPTIONAL { ?bp wdt:P625 ?bpCoord }
+             OPTIONAL { ?bp rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
 } GROUP BY ?item ?human`;
     let rows = null;
     try { const d = await sparql(q); rows = (d && d.results && d.results.bindings) || []; } catch (e) { console.warn("details", e); }
@@ -844,6 +905,7 @@ footer p { max-width: 80ch; }
       if (r.image) a.p18 = decodeURIComponent(r.image.value.split("/").pop());
       if (r.commonscat) a.cat = r.commonscat.value;
       if (r.imdbid && /^nm\d+$/.test(r.imdbid.value)) a.imdb = r.imdbid.value;
+      a.birthPlace = birthPlace(r.birthName && r.birthName.value, r.birthCoord && r.birthCoord.value);
     }
     for (const a of batch) {
       a.detailsOk = !!rows;
@@ -1166,7 +1228,7 @@ footer p { max-width: 80ch; }
   }
   function clearSelection() { if (selectedId != null) { selectedId = null; return true; } return false; }
   $("pickClear").addEventListener("click", () => { clearSelection(); applyViewNow(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && clearSelection()) applyViewNow(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !mapDlg.open && clearSelection()) applyViewNow(); });
 
   function updateGallery() {
     const visible = track.querySelectorAll(".slide:not([hidden])").length;
@@ -1408,6 +1470,115 @@ footer p { max-width: 80ch; }
   ["life", "sort"].forEach((id) => { $(id).addEventListener("change", applyView); $(id).addEventListener("input", applyView); });
   $("q").addEventListener("input", () => { clearSelection(); applyView(); });
 
+  /* ---------- birthplace map ---------- */
+  // Leaflet loads only when someone first opens the map. Dots are grouped by birthplace; bigger dot, more actors.
+  const mapDlg = $("mapDlg");
+  let leafletReady = null, lmap = null, dotLayer = null, mapScope = "filtered";
+  function loadLeaflet() {
+    if (leafletReady) return leafletReady;
+    leafletReady = new Promise((res, rej) => {
+      const css = document.createElement("link");
+      css.rel = "stylesheet"; css.href = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css";
+      document.head.append(css);
+      const js = document.createElement("script");
+      js.src = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js";
+      js.onload = () => res(window.L);
+      js.onerror = () => { leafletReady = null; rej(new Error("map library")); };
+      document.head.append(js);
+    });
+    return leafletReady;
+  }
+  const mapList = () => mapScope === "all" ? actors.filter((a) => !a.removed) : displayOrder.filter((a) => a.filterOk);
+  const hasPlace = (a) => a.birthPlace && a.birthPlace.lat != null && a.birthPlace.lon != null;
+  function scopeLabel() {
+    if (mapScope === "all") return "everyone on the register";
+    const q = searchText();
+    return q ? "names matching “" + $("q").value.trim() + "”" : letter === "all" ? "the current filters" : "surnames in " + letter;
+  }
+  function updateMapScopeCounts() {
+    const counts = { filtered: displayOrder.filter((a) => a.filterOk).length, all: actors.filter((a) => !a.removed).length };
+    for (const b of $("mapScope").querySelectorAll("button[data-v]")) b.querySelector(".n").textContent = counts[b.dataset.v];
+  }
+  function showActorFromMap(a) {
+    mapDlg.close();
+    selectedId = null;
+    selectActor(a);
+  }
+  function popupFor(p) {
+    const box = el("div", {},
+      el("div", { class: "pop-title", text: p.name }),
+      el("div", { class: "pop-count", text: p.people.length + (p.people.length === 1 ? " actor" : " actors") + " born here" }));
+    const ul = el("ul", { class: "pop-list" });
+    p.people.sort((x, y) => coll.compare(x.sortName, y.sortName)).forEach((a) => {
+      const b = el("button", { type: "button", title: "Show " + a.name + " in the table" }, a.name, birthYear(a) ? el("span", { class: "yr", text: String(birthYear(a)) }) : null);
+      b.addEventListener("click", () => showActorFromMap(a));
+      ul.append(el("li", {}, b));
+    });
+    box.append(ul);
+    return box;
+  }
+  function drawDots() {
+    const L = window.L, list = mapList();
+    const places = new Map();
+    let mapped = 0;
+    for (const a of list) {
+      if (!hasPlace(a)) continue;
+      mapped++;
+      const k = a.birthPlace.lat.toFixed(2) + "," + a.birthPlace.lon.toFixed(2);
+      if (!places.has(k)) places.set(k, { name: a.birthPlace.name || "Unnamed place", lat: a.birthPlace.lat, lon: a.birthPlace.lon, people: [] });
+      places.get(k).people.push(a);
+    }
+    dotLayer.clearLayers();
+    const css = getComputedStyle(document.documentElement);
+    const fill = css.getPropertyValue("--dot").trim() || "#1f9d4c", edge = css.getPropertyValue("--dot-edge").trim() || "#0f5a2a";
+    const pts = [];
+    [...places.values()].sort((x, y) => y.people.length - x.people.length).forEach((p) => {
+      const m = L.circleMarker([p.lat, p.lon], { radius: Math.min(26, 5 + Math.sqrt(p.people.length) * 2.4), color: edge, weight: 1, fillColor: fill, fillOpacity: 0.78 });
+      m.bindTooltip(p.name + " · " + p.people.length, { direction: "top", offset: [0, -4] });
+      m.bindPopup(() => popupFor(p), { maxWidth: 280 });
+      dotLayer.addLayer(m);
+      pts.push([p.lat, p.lon]);
+    });
+    const missing = list.length - mapped;
+    const sub = $("mapSub"); sub.textContent = "";
+    sub.append(el("span", { class: "key" }),
+      mapped + " of " + list.length + " actors (" + scopeLabel() + ") across " + places.size + (places.size === 1 ? " place" : " places") + "." +
+      (missing ? " " + missing + (missing === 1 ? " has" : " have") + " no recorded birthplace." : "") + " Select a dot to see who was born there.");
+    if (pts.length) lmap.fitBounds(pts, { padding: [36, 36], maxZoom: 8 });
+    else lmap.setView([52.6, -1.6], 6);
+  }
+  async function openMap() {
+    updateMapScopeCounts();
+    mapDlg.showModal();
+    const box = $("map");
+    if (!lmap) box.innerHTML = '<div class="map-msg">Loading map…</div>';
+    try {
+      const L = await loadLeaflet();
+      if (!lmap) {
+        box.textContent = "";
+        lmap = L.map(box, { worldCopyJump: true, zoomControl: true });
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+        }).addTo(lmap);
+        dotLayer = L.layerGroup().addTo(lmap);
+      }
+      lmap.invalidateSize();
+      drawDots();
+    } catch (e) {
+      box.innerHTML = '<div class="map-msg">The map couldn\'t load. Check your internet connection, then close this and try again.</div>';
+    }
+  }
+  $("mapOpen").addEventListener("click", openMap);
+  $("mapClose").addEventListener("click", () => mapDlg.close());
+  mapDlg.addEventListener("click", (e) => { if (e.target === mapDlg) mapDlg.close(); });
+  $("mapScope").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]");
+    if (!b) return;
+    mapScope = b.dataset.v;
+    for (const x of $("mapScope").querySelectorAll("button[data-v]")) x.setAttribute("aria-checked", String(x === b));
+    if (lmap) drawDots();
+  });
+
   /* ---------- saved-data note ---------- */
   function ago(ts) {
     const days = Math.floor((Date.now() - ts) / DAY);
@@ -1419,10 +1590,10 @@ footer p { max-width: 80ch; }
     const n = $("cacheNote");
     if (hosted) {
       const parts = [siteCount + " names and " + sitePhotos + " photos from this site's saved copy" + (siteSavedAt ? ", updated " + fmtDay(siteSavedAt) : "") + "."];
-      if (deltaState === "checking") parts.push("Checking Wikipedia for names added since then…");
-      else if (deltaState === "none") parts.push("No names have been added on Wikipedia since then.");
-      else if (deltaState === "added") parts.push(deltaCount + (deltaCount === 1 ? " name has" : " names have") + " been added on Wikipedia since then, and only " + (deltaCount === 1 ? "that one is" : "those are") + " looked up live.");
-      else if (deltaState === "failed") parts.push("Couldn't reach Wikipedia to check for new names, so only the saved copy is shown.");
+      if (deltaState === "checking") parts.push("Checking the list for names added since then…");
+      else if (deltaState === "none") parts.push("No names have been added to the list since then.");
+      else if (deltaState === "added") parts.push(deltaCount + (deltaCount === 1 ? " name has" : " names have") + " been added to the list since then, and only " + (deltaCount === 1 ? "that one is" : "those are") + " looked up live.");
+      else if (deltaState === "failed") parts.push("Couldn't check the list for new names, so only the saved copy is shown.");
       if (siteIncomplete) parts.push(siteIncomplete + (siteIncomplete === 1 ? " saved entry was" : " saved entries were") + " incomplete and " + (siteIncomplete === 1 ? "is" : "are") + " looked up live.");
       n.textContent = parts.join(" ");
       return;
@@ -1435,7 +1606,7 @@ footer p { max-width: 80ch; }
     noteBusy = true;
     const count = (await DB.count("blobs")) || 0;
     noteBusy = false;
-    const refreshBtn = el("button", { type: "button", class: "text-btn", text: "Refresh from Wikipedia" });
+    const refreshBtn = el("button", { type: "button", class: "text-btn", text: "Refresh all data" });
     refreshBtn.addEventListener("click", async () => {
       refreshBtn.disabled = true; refreshBtn.textContent = "Refreshing…";
       await DB.clear(["meta", "info", "photos"]);
@@ -1540,7 +1711,7 @@ footer p { max-width: 80ch; }
       try { raw = await loadList(); }
       catch (e) {
         console.error(e);
-        showError("This page fetches its data live from Wikipedia, Wikidata and Wikimedia Commons, so it needs an internet connection and must be opened in a regular web browser.");
+        showError("This page looks its data up live, so it needs an internet connection and must be opened in a regular web browser.");
         setList("failed");
         renderCacheNote();
         return;
@@ -1556,7 +1727,7 @@ footer p { max-width: 80ch; }
   }
 
   // Hosted mode: compare the live list with the saved copy and look up only names it doesn't have.
-  // The live list is remembered in this browser for a day, so repeat visits don't ask Wikipedia again.
+  // The live list is remembered in this browser for a day, so repeat visits don't check again.
   async function checkForNewNames() {
     let live = null;
     if (cacheAvailable) {
