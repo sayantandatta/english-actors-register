@@ -35,7 +35,7 @@ USER_AGENT = os.environ.get("EAR_USER_AGENT", "EnglishActorsRegister/1.0 (set EA
 LIST_PAGE = "List_of_English_actors"
 THUMB = 120
 SCHEMA = 3
-DATA_VERSION = 2            # bump when actors need new fields; their photos are kept
+DATA_VERSION = 3            # bump when actors need new fields; their photos are kept
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(HERE, "data")
@@ -287,9 +287,9 @@ def load_details(batch):
   OPTIONAL { ?item wdt:P18 ?img }
   OPTIONAL { ?item wdt:P373 ?cat }
   OPTIONAL { ?item wdt:P345 ?imdb }
-  OPTIONAL { ?item wdt:P19 ?bp .
-             OPTIONAL { ?bp wdt:P625 ?bpCoord }
-             OPTIONAL { ?bp rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
+  OPTIONAL { ?item wdt:P19 ?birthPlaceItem .
+             OPTIONAL { ?birthPlaceItem wdt:P625 ?bpCoord }
+             OPTIONAL { ?birthPlaceItem rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
 } GROUP BY ?item ?human""" % (" ".join("wd:" + a["qid"] for a in batch), date_block("P569", "b"), date_block("P570", "d"))
     rows = sparql(q)
     if rows is None:

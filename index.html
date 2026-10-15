@@ -452,7 +452,7 @@ footer p { max-width: 80ch; }
   const COMMONS = "https://commons.wikimedia.org/w/api.php";
   const WDQS = "https://query.wikidata.org/sparql";
   const LIST_PAGE = "List_of_English_actors";
-  const SCHEMA = 4;                          // bump to discard data saved by older versions of this page
+  const SCHEMA = 5;                          // bump to discard data saved by older versions of this page
   const DAY = 864e5, LIST_TTL = 7 * DAY, INFO_TTL = 7 * DAY, PHOTO_TTL = 30 * DAY;
   const THUMB = 120;                         // smallest standard Wikimedia thumbnail that still reads as a portrait
   const LOOKAHEAD = 5;
@@ -886,9 +886,9 @@ footer p { max-width: 80ch; }
   OPTIONAL { ?item wdt:P18 ?img }
   OPTIONAL { ?item wdt:P373 ?cat }
   OPTIONAL { ?item wdt:P345 ?imdb }
-  OPTIONAL { ?item wdt:P19 ?bp .
-             OPTIONAL { ?bp wdt:P625 ?bpCoord }
-             OPTIONAL { ?bp rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
+  OPTIONAL { ?item wdt:P19 ?birthPlaceItem .
+             OPTIONAL { ?birthPlaceItem wdt:P625 ?bpCoord }
+             OPTIONAL { ?birthPlaceItem rdfs:label ?bpName FILTER(LANG(?bpName) = "en") } }
 } GROUP BY ?item ?human`;
     let rows = null;
     try { const d = await sparql(q); rows = (d && d.results && d.results.bindings) || []; } catch (e) { console.warn("details", e); }
