@@ -1658,7 +1658,7 @@ footer p { max-width: 80ch; }
   /* ---------- visitor counter and votes ---------- */
   // Uses a free Supabase database (see setup.sql). Fill in the two values below to switch these features on;
   // left blank, the counter and vote buttons simply don't appear. The key is the public "anon"/"publishable" key.
-  const VOTES_API = { url: "", key: "" };
+  const VOTES_API = { url: "https://azegvgtawdfbtjtbaaot.supabase.co", key: "sb_publishable_hIQBkECLQwExkbe560u5CA_BXxTJzG-" };
   const votesOn = !!(VOTES_API.url && VOTES_API.key);
   const storeGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const storeSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private window: votes still count, just not remembered */ } };
