@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Submissions – English Actors Register</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a review desk. Sign-in card, then a sticky bar of status tabs and filters over a single column of submission cards. */
+:root {
+  --paper: #EDEFF3; --surface: #FFFFFF; --ink: #15181E; --muted: #5B6271; --line: #D3D8E0;
+  --accent: #7A1E36; --accent-ink: #FFFFFF; --accent-soft: #F4E4E9; --ok: #2F6B4F; --ok-soft: #E2F0E8;
+  --font-display: "Libre Caslon Display", "Big Caslon", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #111318; --surface: #191C23; --ink: #E8EAEF; --muted: #9AA1AE; --line: #2B2F38;
+    --accent: #E3839B; --accent-ink: #1A0E12; --accent-soft: #3A1F28; --ok: #7CC4A0; --ok-soft: #1C2E25; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #111318; --surface: #191C23; --ink: #E8EAEF; --muted: #9AA1AE; --line: #2B2F38;
+  --accent: #E3839B; --accent-ink: #1A0E12; --accent-soft: #3A1F28; --ok: #7CC4A0; --ok-soft: #1C2E25; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--font-body); -webkit-font-smoothing: antialiased; }
+[hidden] { display: none !important; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { padding-block: 32px 16px; }
+.eyebrow { font: 500 11px/1 var(--font-data); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 400 clamp(30px, 5vw, 44px)/1.05 var(--font-display); margin: 8px 0 6px; }
+.sub { color: var(--muted); margin: 0; max-width: 64ch; }
+.sub a { color: var(--ink); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.login { max-width: 420px; display: grid; gap: 12px; margin-block: 8px 40px; }
+.login h2 { font: 400 22px/1.2 var(--font-display); margin: 0; }
+label.f { display: grid; gap: 5px; font: 500 12px/1.2 var(--font-body); min-width: 0; }
+input[type="text"], input[type="email"], input[type="password"], textarea {
+  font-size: 15px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%; font-weight: 400;
+}
+textarea { min-height: 64px; resize: vertical; }
+.btn { font: 500 13px/1 var(--font-body); border-radius: 999px; padding: 9px 15px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.btn:hover:not(:disabled) { border-color: var(--ink); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.good { background: var(--ok); color: var(--surface); border-color: var(--ok); }
+.btn.danger { color: var(--accent); border-color: var(--accent); }
+.btn:disabled { opacity: .55; cursor: progress; }
+.msg { font-size: 13px; color: var(--muted); }
+.msg.err { color: var(--accent); }
+.msg.ok { color: var(--ok); }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(6px); border-block: 1px solid var(--line); }
+.bar .wrap { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding-block: 10px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.seg button { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; font: 13px/1 var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; }
+.seg button .n { font: 11px/1 var(--font-data); color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.seg button[aria-pressed="true"] .n { color: inherit; opacity: .75; }
+.who { margin-left: auto; display: flex; align-items: center; gap: 10px; font: 12px var(--font-data); color: var(--muted); }
+
+main { padding-block: 18px 60px; }
+.list { display: grid; gap: 14px; }
+.empty { text-align: center; color: var(--muted); padding: 40px 16px; border: 1px dashed var(--line); border-radius: 10px; }
+.sub-card { display: grid; grid-template-columns: 150px 1fr; gap: 18px; }
+@media (max-width: 640px) { .sub-card { grid-template-columns: 1fr; } }
+.sub-card .pic { width: 150px; max-width: 100%; aspect-ratio: 3 / 4; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); display: grid; place-items: center; overflow: hidden; color: var(--muted); font-size: 12px; text-align: center; padding: 6px; }
+.sub-card .pic img { width: 100%; height: 100%; object-fit: cover; }
+.sub-card .pic a { display: block; width: 100%; height: 100%; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; font: 12px/1.4 var(--font-data); color: var(--muted); margin-bottom: 10px; }
+.badge { font: 500 10.5px/1 var(--font-data); letter-spacing: .1em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+.badge.photo { background: var(--ok-soft); color: var(--ok); }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.fields .wide { grid-column: 1 / -1; }
+@media (max-width: 480px) { .fields { grid-template-columns: 1fr; } }
+.email { display: flex; gap: 8px; align-items: center; font: 13px var(--font-data); word-break: break-all; }
+.copy { font: 500 11px/1 var(--font-body); padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: none; color: var(--muted); cursor: pointer; }
+.rights { font-size: 12px; color: var(--muted); }
+.rights b { color: var(--ink); font-weight: 500; }
+.warn { font-size: 12px; color: var(--accent); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">English Actors Register · Admin</div>
+    <h1>Submissions</h1>
+    <p class="sub">Review suggested actors and photos sent in by visitors. Approved items appear on <a href="./">the public site</a> straight away; visitors see them the next time they load the page.</p>
+  </div>
+</header>
+
+<section class="wrap" id="loginView" hidden>
+  <form class="card login" id="loginForm" novalidate>
+    <h2>Sign in</h2>
+    <label class="f" for="lEmail">Email <input type="email" id="lEmail" autocomplete="username" required></label>
+    <label class="f" for="lPass">Password <input type="password" id="lPass" autocomplete="current-password" required></label>
+    <div class="actions" style="margin-top:4px"><button class="btn primary" type="submit" id="lGo">Sign in</button><span class="msg" id="lMsg" role="status"></span></div>
+  </form>
+</section>
+
+<div class="bar" id="bar" hidden>
+  <div class="wrap">
+    <div class="seg" id="statusSeg" role="group" aria-label="Status">
+      <button type="button" data-v="pending" aria-pressed="true">Waiting for review <span class="n"></span></button>
+      <button type="button" data-v="approved" aria-pressed="false">Approved <span class="n"></span></button>
+      <button type="button" data-v="rejected" aria-pressed="false">Rejected <span class="n"></span></button>
+    </div>
+    <div class="seg" id="kindSeg" role="group" aria-label="Type">
+      <button type="button" data-v="all" aria-pressed="true">All</button>
+      <button type="button" data-v="actor" aria-pressed="false">New actors</button>
+      <button type="button" data-v="photo" aria-pressed="false">Photos</button>
+    </div>
+    <div class="who"><span id="whoAmI"></span><button class="btn" type="button" id="refresh">Refresh</button><button class="btn" type="button" id="signOut">Sign out</button></div>
+  </div>
+</div>
+
+<main class="wrap" id="desk" hidden>
+  <p class="msg" id="deskMsg" role="status"></p>
+  <div class="list" id="list"></div>
+</main>
+
+<datalist id="actorTitles"></datalist>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(() => {
+  "use strict";
+  // Same project and public key as index.html. Sign-in decides what this page can do: only emails listed
+  // in the ear_admins table can read or change submissions.
+  const CONFIG = { url: "https://azegvgtawdfbtjtbaaot.supabase.co", key: "sb_publishable_hIQBkECLQwExkbe560u5CA_BXxTJzG-" };
+  const $ = (id) => document.getElementById(id);
+  function el(tag, attrs = {}, ...kids) {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (v == null || v === false) continue;
+      if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v === true ? "" : v);
+    }
+    for (const k of kids) if (k != null) n.append(k);
+    return n;
+  }
+  if (!window.supabase) { document.body.append(el("p", { class: "wrap msg err", text: "The admin tools couldn't load. Check your internet connection and reload." })); return; }
+  const sb = window.supabase.createClient(CONFIG.url, CONFIG.key);
+  let status = "pending", kind = "all";
+  const titles = new Set();
+
+  const setMsg = (node, text, cls) => { node.className = "msg" + (cls ? " " + cls : ""); node.textContent = text || ""; };
+  const fmtDate = (s) => s ? new Date(s).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+
+  /* ---------- sign in ---------- */
+  function showLogin(note, cls) {
+    $("loginView").hidden = false; $("bar").hidden = true; $("desk").hidden = true;
+    setMsg($("lMsg"), note || "", cls);
+  }
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("lEmail").value.trim(), password = $("lPass").value;
+    if (!email || !password) return setMsg($("lMsg"), "Enter your email and password.", "err");
+    $("lGo").disabled = true; setMsg($("lMsg"), "Signing in…");
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    $("lGo").disabled = false;
+    if (error) return setMsg($("lMsg"), error.message === "Invalid login credentials" ? "That email and password don't match." : error.message, "err");
+    $("lPass").value = "";
+    enter();
+  });
+  $("signOut").addEventListener("click", async () => { await sb.auth.signOut(); showLogin("Signed out."); });
+
+  async function enter() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return showLogin();
+    const { data: isAdmin, error } = await sb.rpc("ear_is_admin");
+    if (error || !isAdmin) {
+      await sb.auth.signOut();
+      return showLogin(error ? "Couldn't check your access. Try again." : session.user.email + " isn't on the admin list.", "err");
+    }
+    $("whoAmI").textContent = session.user.email;
+    $("loginView").hidden = true; $("bar").hidden = false; $("desk").hidden = false;
+    loadTitles();
+    load();
+  }
+
+  async function loadTitles() {
+    if (titles.size) return;
+    try {
+      const r = await fetch("data/actors.json", { cache: "no-cache" });
+      const j = await r.json();
+      const dl = $("actorTitles");
+      for (const a of j.actors || []) { titles.add(a.title); dl.append(el("option", { value: a.title })); }
+    } catch (e) { /* the actor list only helps spot typos */ }
+  }
+
+  /* ---------- lists ---------- */
+  function pick(segId, value) {
+    for (const b of $(segId).querySelectorAll("button")) b.setAttribute("aria-pressed", String(b.dataset.v === value));
+  }
+  $("statusSeg").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; status = b.dataset.v; pick("statusSeg", status); load(); });
+  $("kindSeg").addEventListener("click", (e) => { const b = e.target.closest("button[data-v]"); if (!b) return; kind = b.dataset.v; pick("kindSeg", kind); load(); });
+  $("refresh").addEventListener("click", () => load());
+
+  async function loadCounts() {
+    for (const b of $("statusSeg").querySelectorAll("button[data-v]")) {
+      let q = sb.from("ear_submissions").select("id", { count: "exact", head: true }).eq("status", b.dataset.v);
+      if (kind !== "all") q = q.eq("kind", kind);
+      const { count } = await q;
+      b.querySelector(".n").textContent = count == null ? "" : String(count);
+    }
+  }
+
+  async function load() {
+    const list = $("list");
+    setMsg($("deskMsg"), "Loading…");
+    let q = sb.from("ear_submissions").select("*").eq("status", status).order("created_at", { ascending: status === "pending" }).limit(200);
+    if (kind !== "all") q = q.eq("kind", kind);
+    const { data, error } = await q;
+    loadCounts();
+    if (error) { setMsg($("deskMsg"), "Couldn't load submissions: " + error.message, "err"); return; }
+    setMsg($("deskMsg"), "");
+    list.textContent = "";
+    if (!data.length) {
+      list.append(el("div", { class: "empty", text: status === "pending" ? "Nothing waiting for review." : "Nothing here yet." }));
+      return;
+    }
+    for (const row of data) list.append(card(row));
+  }
+
+  /* ---------- one submission ---------- */
+  function card(row) {
+    const isPhoto = row.kind === "photo";
+    const pic = el("div", { class: "pic", text: row.photo_path ? "Loading photo…" : "No photo sent" });
+    showPhoto(row, pic);
+
+    const inputs = {};
+    const input = (key, label, opts = {}) => {
+      const id = "f-" + key + "-" + row.id;
+      const node = opts.textarea ? el("textarea", { id, maxlength: opts.max || 1000 }) : el("input", { type: "text", id, maxlength: opts.max || 200, list: opts.list || null });
+      node.value = row[key] || "";
+      inputs[key] = node;
+      return el("label", { class: "f" + (opts.wide ? " wide" : ""), for: id }, label, node);
+    };
+    const fields = el("div", { class: "fields" });
+    if (isPhoto) {
+      fields.append(input("actor_title", "Actor on the site", { wide: true, list: "actorTitles" }), input("note", "Note from the sender", { wide: true, textarea: true }));
+    } else {
+      fields.append(input("actor_first", "First name", { max: 100 }), input("actor_last", "Last name", { max: 100 }), input("film", "Film or show", { wide: true }));
+    }
+
+    const copyBtn = el("button", { type: "button", class: "copy", text: "Copy" });
+    copyBtn.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(row.submitter_email); copyBtn.textContent = "Copied"; } catch (e) { copyBtn.textContent = "Select and copy"; }
+    });
+    const msg = el("span", { class: "msg", role: "status" });
+    const warn = el("div", { class: "warn" });
+    const checkTitle = () => {
+      warn.textContent = isPhoto && titles.size && !titles.has(inputs.actor_title.value.trim())
+        ? "No actor on the site has exactly this name, so the photo won't show anywhere. Pick a name from the suggestions." : "";
+    };
+    if (isPhoto) { inputs.actor_title.addEventListener("input", checkTitle); setTimeout(checkTitle, 600); }
+
+    const body = el("div", { style: "min-width:0" },
+      el("div", { class: "meta" },
+        el("span", { class: "badge" + (isPhoto ? " photo" : ""), text: isPhoto ? "Photo" : "New actor" }),
+        el("span", { text: "Sent " + fmtDate(row.created_at) }),
+        row.reviewed_at ? el("span", { text: (row.status === "approved" ? "Approved " : row.status === "rejected" ? "Rejected " : "Reviewed ") + fmtDate(row.reviewed_at) }) : null),
+      fields,
+      el("div", { class: "email", style: "margin-top:12px" }, el("span", { class: "msg", text: "From" }), el("span", { text: row.submitter_email }), copyBtn),
+      row.photo_path ? el("p", { class: "rights" }, "Sender confirmed they may share the photo: ", el("b", { text: row.rights_confirmed ? "yes" : "no" })) : null,
+      warn);
+
+    const actions = el("div", { class: "actions" });
+    const btn = (text, cls, fn) => {
+      const b = el("button", { type: "button", class: "btn " + (cls || ""), text });
+      b.addEventListener("click", async () => {
+        const all = actions.querySelectorAll("button"); all.forEach((x) => (x.disabled = true));
+        setMsg(msg, "Working…");
+        try { await fn(); } catch (e) { setMsg(msg, e.message || "That didn't work. Try again.", "err"); all.forEach((x) => (x.disabled = false)); }
+      });
+      return b;
+    };
+    const edits = () => Object.fromEntries(Object.entries(inputs).map(([k, n]) => [k, n.value.trim() || null]));
+    const save = async (extra) => {
+      const { error } = await sb.from("ear_submissions").update({ ...edits(), ...extra }).eq("id", row.id);
+      if (error) throw new Error(error.message);
+    };
+    const done = (text) => { setMsg(msg, text, "ok"); setTimeout(load, 900); };
+
+    if (row.status === "pending") {
+      actions.append(
+        btn("Approve and publish", "good", async () => {
+          const e = edits();
+          if (!isPhoto && (!e.actor_first || !e.actor_last || !e.film)) throw new Error("First name, last name and film are needed before approving.");
+          if (isPhoto && !e.actor_title) throw new Error("Choose which actor this photo is of.");
+          let approved_photo_path = null;
+          if (row.photo_path) {
+            setMsg(msg, "Publishing the photo…");
+            const dl = await sb.storage.from("ear-submissions").download(row.photo_path);
+            if (dl.error) throw new Error("Couldn't read the uploaded photo: " + dl.error.message);
+            approved_photo_path = row.kind + "/" + row.id + ".jpg";
+            const up = await sb.storage.from("ear-approved").upload(approved_photo_path, dl.data, { contentType: dl.data.type || "image/jpeg", upsert: true });
+            if (up.error) throw new Error("Couldn't publish the photo: " + up.error.message);
+          }
+          await save({ status: "approved", reviewed_at: new Date().toISOString(), approved_photo_path });
+          done("Approved. It's now on the site.");
+        }),
+        btn("Save changes", "", async () => { await save({}); setMsg(msg, "Saved.", "ok"); actions.querySelectorAll("button").forEach((x) => (x.disabled = false)); }),
+        btn("Reject", "danger", async () => { await save({ status: "rejected", reviewed_at: new Date().toISOString() }); done("Rejected."); }));
+    } else if (row.status === "approved") {
+      actions.append(
+        btn("Save changes", "", async () => { await save({}); setMsg(msg, "Saved. The site shows the new details.", "ok"); actions.querySelectorAll("button").forEach((x) => (x.disabled = false)); }),
+        btn("Take off the site", "danger", async () => {
+          if (row.approved_photo_path) await sb.storage.from("ear-approved").remove([row.approved_photo_path]);
+          await save({ status: "rejected", reviewed_at: new Date().toISOString(), approved_photo_path: null });
+          done("Taken off the site.");
+        }));
+    } else {
+      actions.append(
+        btn("Move back to review", "", async () => { await save({ status: "pending", reviewed_at: null }); done("Moved back to review."); }),
+        btn("Delete permanently", "danger", async () => {
+          if (!window.confirm("Delete this submission and its photo for good?")) { actions.querySelectorAll("button").forEach((x) => (x.disabled = false)); setMsg(msg, ""); return; }
+          if (row.photo_path) await sb.storage.from("ear-submissions").remove([row.photo_path]);
+          if (row.approved_photo_path) await sb.storage.from("ear-approved").remove([row.approved_photo_path]);
+          const { error } = await sb.from("ear_submissions").delete().eq("id", row.id);
+          if (error) throw new Error(error.message);
+          done("Deleted.");
+        }));
+    }
+    actions.append(msg);
+    body.append(actions);
+    return el("article", { class: "card sub-card" }, pic, body);
+  }
+
+  async function showPhoto(row, box) {
+    if (!row.photo_path && !row.approved_photo_path) return;
+    let url = null;
+    if (row.approved_photo_path) {
+      url = sb.storage.from("ear-approved").getPublicUrl(row.approved_photo_path).data.publicUrl;
+    } else {
+      const { data, error } = await sb.storage.from("ear-submissions").createSignedUrl(row.photo_path, 3600);
+      if (!error && data) url = data.signedUrl;
+    }
+    box.textContent = "";
+    if (!url) { box.textContent = "Photo couldn't be loaded"; return; }
+    const img = el("img", { src: url, alt: "Submitted photo" });
+    img.addEventListener("error", () => { box.textContent = "Photo couldn't be loaded"; }, { once: true });
+    box.append(el("a", { href: url, target: "_blank", rel: "noopener", title: "Open full size" }, img));
+  }
+
+  sb.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") showLogin(); });
+  enter();
+})();
+</script>
+</body>
+</html>

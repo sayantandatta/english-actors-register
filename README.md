@@ -10,6 +10,8 @@ A one-page register of everyone on Wikipedia's *List of English actors*: photo, 
 | `sync.py` | Builds and updates the saved copy below. Needs Python 3.8 or later, nothing to install. |
 | `data/actors.json` | Created by `sync.py`: names, dates, gender, credits and photo details. |
 | `photos/` | Created by `sync.py`: one small photo (120 px wide) per actor. |
+| `admin.html` | The dashboard for reviewing visitors' suggestions and photos (sign-in required). |
+| `setup.sql`, `setup-submissions.sql` | Database setup for votes and for visitor submissions (see below). |
 
 ## Hosting it for free on GitHub Pages (recommended)
 
@@ -44,6 +46,26 @@ The page can show how many people have visited, and let visitors like, dislike o
 4. In `index.html`, find `const VOTES_API = { url: "", key: "" };` and put those two values between the quotes.
 
 The publishable key is meant to be public: with `setup.sql` in place it can only count visits, record one vote per browser per actor, and read the totals. No names, emails or IP addresses are stored. Free projects pause after a week without use; the twice-weekly update reads the totals each time, which keeps the database awake.
+
+## Visitor suggestions, photos and the admin dashboard (optional)
+
+When the database above is set up, visitors can:
+
+- search for a film or show that isn't on the page and see its year, director and cast, with buttons for any cast members who are in the register;
+- suggest an actor who's missing (their email, the actor's first and last name and one film are required; a photo is optional);
+- send a photo for an actor shown as "No photo found".
+
+Everything they send waits in a private queue. Nothing appears on the site until you approve it in the dashboard at `https://<your-username>.github.io/english-actors-register/admin.html`, where you can correct the details, approve, reject, take an approved item back off the site, or delete it. Submitters' emails are only visible in the dashboard.
+
+To switch it on (once):
+
+1. In Supabase, open **SQL Editor → New query**, paste everything from `setup-submissions.sql`, and press **Run**.
+2. Open **Authentication → Users → Add user → Create new user**, enter your email and a strong password, and tick **Auto Confirm User**.
+3. Back in the **SQL Editor**, run this one line with your own email: `insert into public.ear_admins (email) values ('you@example.com');`
+4. Open **Authentication → Sign In / Providers** and turn off **Allow new users to sign up**, so nobody else can create an account.
+5. Open `admin.html` on your site and sign in.
+
+To add another reviewer, repeat steps 2 and 3 with their email. Visitors can't read the queue, see other people's emails or change anything: they can only add a submission (up to 20 a day per email) and upload a photo into the private queue.
 
 ## Hosting it anywhere else
 

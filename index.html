@@ -301,6 +301,60 @@ ol.films .yr { font: 12px var(--font-data); color: var(--muted); margin-left: 4p
   max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 8px; background: var(--ink); color: var(--paper);
   font-size: 13px; box-shadow: 0 8px 24px rgb(0 0 0 / .25);
 }
+/* ---------- film lookup panel ---------- */
+.film-panel { margin: 4px 0 18px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.film-panel h2 { font: 400 22px/1.2 var(--font-display); margin: 4px 0 12px; text-wrap: balance; }
+.film-panel .film-msg { color: var(--muted); margin: 0; }
+.film-list { display: grid; gap: 14px; }
+.film-card { display: grid; grid-template-columns: auto 1fr; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.film-card:first-child { border-top: 0; padding-top: 0; }
+.film-card img { width: 84px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); background: var(--paper); }
+.film-card .no-img { width: 84px; aspect-ratio: 2 / 3; border-radius: 4px; border: 1px dashed var(--line); }
+.film-card h3 { font: 400 20px/1.2 var(--font-display); margin: 2px 0 4px; }
+.film-card .kind { font: 11px/1.3 var(--font-data); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.film-card p { margin: 4px 0; font-size: 14px; color: var(--muted); min-width: 0; }
+.film-card .cast-label { font: 500 10px/1 var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.film-card .in-register { display: inline-flex; flex-wrap: wrap; gap: 6px; vertical-align: middle; }
+.film-card .in-register button { font: 500 13px/1 var(--font-body); color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 999px; padding: 5px 10px; cursor: pointer; }
+.film-card .more { font-size: 13px; color: var(--accent); }
+.suggest-row { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.suggest-line { margin: 8px 0 0; font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+
+/* ---------- submission forms ---------- */
+.frame.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.add-photo { font: 500 11px/1.2 var(--font-body); color: var(--accent); background: none; border: 0; padding: 2px 4px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+dialog.form-dlg {
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; overflow: auto;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgb(0 0 0 / .35);
+}
+dialog.form-dlg::backdrop { background: rgb(10 12 16 / .55); }
+.form-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 18px 20px 6px; }
+.form-head h2 { font: 400 24px/1.15 var(--font-display); margin: 4px 0 0; }
+.form-body { padding: 8px 20px 20px; display: grid; gap: 14px; }
+.form-body .intro { margin: 0; color: var(--muted); font-size: 14px; }
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .f-row { grid-template-columns: 1fr; } }
+.f-field { display: grid; gap: 5px; min-width: 0; }
+.f-field label, .f-field .flabel { font: 500 12px/1.2 var(--font-body); color: var(--ink); }
+.f-field .req { color: var(--accent); }
+.f-field input[type="text"], .f-field input[type="email"], .f-field textarea {
+  font: inherit; font-size: 15px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; width: 100%;
+}
+.f-field textarea { min-height: 70px; resize: vertical; }
+.f-field input:focus-visible, .f-field textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.f-hint { font-size: 12px; color: var(--muted); }
+.f-photo { display: flex; align-items: center; gap: 12px; }
+.f-photo img { width: 60px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); }
+.f-check { display: flex; gap: 9px; align-items: flex-start; font-size: 13px; line-height: 1.4; color: var(--ink); }
+.f-check input { margin-top: 2px; accent-color: var(--accent); }
+.f-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.f-submit { font: 500 14px/1 var(--font-body); color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 999px; padding: 11px 20px; cursor: pointer; }
+.f-submit:disabled { opacity: .6; cursor: progress; }
+.f-status { font-size: 13px; color: var(--muted); }
+.f-status.err { color: var(--accent); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.thanks { padding: 6px 0 4px; }
+.thanks p { margin: 0 0 14px; font-size: 15px; }
 .full-index { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
 .full-index summary { cursor: pointer; font: 400 22px/1.2 var(--font-display); padding: 6px 0; }
 .full-index summary:hover { color: var(--accent); }
@@ -357,6 +411,8 @@ footer p { max-width: 80ch; }
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
       <span id="visitText"></span>
     </p>
+    <p class="suggest-line" id="suggestLine" hidden>Know an English actor who's missing?
+      <button type="button" class="text-btn" id="suggestOpen">Suggest an actor</button></p>
     <p class="cache-note" id="cacheNote">Checking for photos saved in this browser…</p>
     <div class="notice" id="notice" hidden></div>
   </div>
@@ -443,6 +499,7 @@ footer p { max-width: 80ch; }
 
 <main>
   <div class="wrap">
+    <section class="film-panel" id="filmPanel" aria-live="polite" hidden></section>
     <div class="table-scroll">
       <table>
         <thead>
@@ -484,6 +541,7 @@ footer p { max-width: 80ch; }
 </dialog>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<dialog class="form-dlg" id="formDlg" aria-labelledby="formTitle"></dialog>
 
 <footer>
   <div class="wrap">
@@ -788,7 +846,7 @@ footer p { max-width: 80ch; }
     const old = fig.querySelector("figcaption"); if (old) old.remove();
     if (state === "queued") { frame.classList.add("queued"); frame.textContent = "Queued"; return; }
     if (state === "loading") { frame.classList.add("loading"); frame.setAttribute("aria-label", "Loading photo"); return; }
-    if (!state || state === "none") { frame.classList.add("empty"); frame.textContent = "No photo found"; return; }
+    if (!state || state === "none") { frame.classList.add("empty"); frame.append(el("span", { text: "No photo found" })); return; }
     const img = el("img", { src: state.src, alt: state.alt, decoding: "async", referrerpolicy: "no-referrer" });
     img.addEventListener("error", () => setPhoto(fig, "none"), { once: true });
     frame.append(state.href ? el("a", { href: state.href, target: "_blank", rel: "noopener", title: "View source and licence" }, img) : img);
@@ -796,7 +854,7 @@ footer p { max-width: 80ch; }
   }
 
   function buildRow(a) {
-    const nameLink = el("a", { class: "name", href: "https://en.wikipedia.org/wiki/" + encodeURIComponent(a.title.replace(/ /g, "_")), target: "_blank", rel: "noopener", text: a.name });
+    const nameLink = a.community ? el("span", { class: "name", text: a.name }) : el("a", { class: "name", href: "https://en.wikipedia.org/wiki/" + encodeURIComponent(a.title.replace(/ /g, "_")), target: "_blank", rel: "noopener", text: a.name });
     a.ui = { links: el("div", { class: "links" }), num: el("td", { class: "c-num" }) };
     a.ui.votes = votesOn ? el("div", { class: "votes", role: "group", "aria-label": "Your opinion of " + a.name }) : null;
     const nameCell = el("td", { class: "c-name" }, a.honour ? el("span", { class: "honour", text: a.honour }) : null, nameLink, a.ui.links, a.ui.votes);
@@ -816,8 +874,9 @@ footer p { max-width: 80ch; }
     tr.dataset.id = a.id;
     a.tr = tr;
     if (a.isRed) {
-      a.ui.links.append(el("span", { class: "pending", text: "No further details" }));
-      a.films = []; a.last = null; a.creditsDone = true;
+      a.ui.links.append(el("span", { class: "pending", text: a.community ? "Suggested by a visitor" : "No further details" }));
+      a.films = a.community && a.community.film ? [{ label: a.community.film }] : []; a.last = null; a.creditsDone = true;
+      a.filmText = a.films.map((f) => f.label.toLowerCase()).join(" ");
       renderDates(a); renderCredits(a); markInfoReady(a);
     }
     return tr;
@@ -852,6 +911,7 @@ footer p { max-width: 80ch; }
   }
 
   function workLink(w, cls) {
+    if (!w.article && !w.qid) return el("span", { class: cls, text: w.label });
     return el("a", { class: cls, href: w.article || ("https://www.wikidata.org/wiki/" + w.qid), target: "_blank", rel: "noopener", text: w.label });
   }
 
@@ -1191,7 +1251,9 @@ footer p { max-width: 80ch; }
   async function preparePhotos(a) {
     try {
       await a.infoReady;
-      if (a.removed || a.isRed) return {};
+      if (a.removed) return {};
+      const visitorPic = (a.community && a.community.photo) || a.communityPhoto;
+      if (a.isRed) return visitorPic ? { pic: { url: visitorPic, community: true }, src: await loadImage(visitorPic) } : {};
       let pic = a.img;
       if (!pic && a.qid) {
         if (a.photoRec !== undefined) pic = a.photoRec;
@@ -1201,18 +1263,31 @@ footer p { max-width: 80ch; }
           if (cacheAvailable && r.complete) DB.put("photos", a.title, { ts: Date.now(), pic });
         }
       }
-      const src = pic ? await loadImage(pic.url) : null;
+      let src = pic ? await loadImage(pic.url) : null;
+      if (!src && a.communityPhoto) { pic = { url: a.communityPhoto, community: true }; src = await loadImage(pic.url); }
       return { pic, src };
     } catch (e) { console.warn("photo", a.name, e); return {}; }
   }
 
+  function addPhotoButton(a) {
+    const frame = a.ui.photo.querySelector(".frame");
+    if (!submitOn || !frame || frame.querySelector(".add-photo")) return;
+    const b = el("button", { type: "button", class: "add-photo", title: "Send us a photo of " + a.name }, "Add a photo");
+    b.addEventListener("click", () => openPhotoForm(a));
+    frame.append(b);
+  }
   function presentPhoto(a, prep) {
     const by = birthYear(a), p = prep.pic;
-    if (!prep.src) { setPhoto(a.ui.photo, "none"); return; }
-    setPhoto(a.ui.photo, {
-      src: prep.src, href: filePage(p.file, p.src || p.url), alt: a.name + (p.year ? " in " + p.year : ""),
-      caption: p.year ? p.year + (by ? ", age " + (p.year - by) : "") : "Date unknown"
-    });
+    a.hasPhoto = !!prep.src;
+    if (!prep.src) {
+      setPhoto(a.ui.photo, "none");
+      addPhotoButton(a);
+      return;
+    }
+    setPhoto(a.ui.photo, p.community
+      ? { src: prep.src, href: null, alt: a.name, caption: "Photo from a visitor" }
+      : { src: prep.src, href: filePage(p.file, p.src || p.url), alt: a.name + (p.year ? " in " + p.year : ""),
+          caption: p.year ? p.year + (by ? ", age " + (p.year - by) : "") : "Date unknown" });
     addSlide(a, prep.src);
   }
 
@@ -1235,6 +1310,8 @@ footer p { max-width: 80ch; }
         const a = q[0];
         const got = await Promise.race([a.photoPrep.then((p) => ({ p })), viewChanged.then(() => null)]);
         if (!got) continue;
+        // a visitor's photo was approved while this lookup was running: try again with it
+        if (!got.p.src && a.communityPhoto && !(got.p.pic && got.p.pic.community)) { a.photoPrep = null; continue; }
         a.photoShown = true;
         if (a.removed) continue;
         presentPhoto(a, got.p);
@@ -1391,7 +1468,7 @@ footer p { max-width: 80ch; }
   const GENDER_WORD = { f: "women", m: "men", x: "non-binary actors", u: "actors with no gender recorded" };
   function describeEmpty(scopeCount, q, gender, life) {
     const place = q ? "matching “" + $("q").value.trim() + "”" : letter === "all" ? "on the list" : "with surnames in " + letter;
-    if (!scopeCount) return q ? "No names match “" + $("q").value.trim() + "”." : "No names " + place + ".";
+    if (!scopeCount) return q ? "No actor or film on this page matches “" + $("q").value.trim() + "”." : "No names " + place + ".";
     const scope = displayOrder.filter(inScope);
     if (scope.some((a) => !a.infoDone)) return "Still loading details for these actors…";
     const who = gender !== "all" ? GENDER_WORD[gender] : "actors";
@@ -1464,6 +1541,10 @@ footer p { max-width: 80ch; }
       const b = el("button", { type: "button", class: "text-btn", text: "Clear gender and Show filters", style: "margin-left:10px" });
       b.addEventListener("click", clearFilters);
       td.append(b);
+    } else if (q && !scopeCount && submitOn) {
+      const b = el("button", { type: "button", class: "text-btn", text: "Suggest this actor", style: "margin-left:10px" });
+      b.addEventListener("click", () => openActorForm($("q").value.trim()));
+      td.append(b);
     }
     if (!shown && actors.length) tbody.append(emptyRow); else emptyRow.remove();
 
@@ -1477,6 +1558,7 @@ footer p { max-width: 80ch; }
     signalView();
     kickInfo();
     photoRunner();
+    updateFilmPanel($("q").value.trim(), !!q && scopeCount === 0);
   }
 
   function updateGenderCounts(list) {
@@ -1764,6 +1846,294 @@ footer p { max-width: 80ch; }
     renderAllVotes();
   }
 
+  /* ---------- film lookup: searches that match nothing on the page ---------- */
+  const FILM_TYPES = "wd:Q11424 wd:Q24869 wd:Q202866 wd:Q229390 wd:Q24862 wd:Q506240 wd:Q5398426 wd:Q1259759 wd:Q581714 wd:Q526877 wd:Q21191270";
+  const filmCache = new Map();
+  let filmTimer = null, filmQuery = "";
+  function updateFilmPanel(q, noMatches) {
+    const panel = $("filmPanel");
+    if (!q || q.length < 3 || !noMatches) { panel.hidden = true; filmQuery = ""; clearTimeout(filmTimer); return; }
+    if (q === filmQuery) return;
+    filmQuery = q;
+    panel.hidden = false;
+    const cached = filmCache.get(q.toLowerCase());
+    renderFilmPanel(q, cached || { state: "loading" });
+    clearTimeout(filmTimer);
+    if (!cached) filmTimer = setTimeout(() => lookUpFilms(q), 450);
+  }
+  async function lookUpFilms(q) {
+    const key = q.toLowerCase();
+    let result;
+    try {
+      const s = await getJSON("https://www.wikidata.org/w/api.php?" + qs({ action: "wbsearchentities", search: q, language: "en", uselang: "en", type: "item", limit: 15, format: "json", origin: "*" }), 2);
+      const ids = ((s && s.search) || []).map((x) => x.id).filter((id) => /^Q\d+$/.test(id));
+      let films = [];
+      if (ids.length) {
+        const d = await sparql(`SELECT ?w ?label ?article (MIN(?date) AS ?released) (GROUP_CONCAT(DISTINCT ?dirName; separator="|") AS ?directors) (SAMPLE(?img) AS ?image) (GROUP_CONCAT(DISTINCT STR(?t); separator=";") AS ?types) WHERE {
+  VALUES ?w { ${ids.map((i) => "wd:" + i).join(" ")} }
+  VALUES ?t { ${FILM_TYPES} }
+  ?w wdt:P31 ?t ; rdfs:label ?label . FILTER(LANG(?label) = "en")
+  OPTIONAL { ?w wdt:P577 ?date }
+  OPTIONAL { ?w wdt:P57 ?dir . ?dir rdfs:label ?dirName FILTER(LANG(?dirName) = "en") }
+  OPTIONAL { ?w wdt:P18 ?img }
+  OPTIONAL { ?article schema:about ?w ; schema:isPartOf <https://en.wikipedia.org/> . }
+} GROUP BY ?w ?label ?article`);
+        const byId = new Map(((d && d.results && d.results.bindings) || []).map((r) => [r.w.value.split("/").pop(), r]));
+        films = ids.filter((id) => byId.has(id)).slice(0, 3).map((id) => {
+          const r = byId.get(id);
+          const types = (r.types ? r.types.value : "").split(";").filter(Boolean).map((u) => u.split("/").pop());
+          return {
+            qid: id, title: r.label.value, year: r.released ? +r.released.value.slice(0, 4) : null, kind: kindOf(types) || "Film",
+            directors: r.directors && r.directors.value ? r.directors.value.split("|") : [],
+            image: r.image ? decodeURIComponent(r.image.value.split("/").pop()) : null,
+            article: r.article ? r.article.value : null, cast: []
+          };
+        });
+        if (films.length) {
+          const c = await sparql(`SELECT ?w ?a ?name ?links WHERE {
+  VALUES ?w { ${films.map((f) => "wd:" + f.qid).join(" ")} }
+  ?w wdt:P161 ?a . ?a wikibase:sitelinks ?links ; rdfs:label ?name . FILTER(LANG(?name) = "en")
+}`);
+          const byQid = new Map(actors.filter((a) => a.qid && !a.removed).map((a) => [a.qid, a]));
+          for (const r of (c && c.results && c.results.bindings) || []) {
+            const f = films.find((x) => x.qid === r.w.value.split("/").pop());
+            const aq = r.a.value.split("/").pop();
+            if (f && !f.cast.some((x) => x.qid === aq)) f.cast.push({ qid: aq, name: r.name.value, links: +r.links.value, actor: byQid.get(aq) || null });
+          }
+          films.forEach((f) => f.cast.sort((x, y) => (!!y.actor - !!x.actor) || y.links - x.links));
+        }
+      }
+      result = { state: "done", films };
+      filmCache.set(key, result);
+    } catch (e) {
+      console.warn("film lookup", e);
+      result = { state: "error" };
+    }
+    if (filmQuery.toLowerCase() === key) renderFilmPanel(q, result);
+  }
+  function suggestRow(q) {
+    if (!submitOn) return null;
+    const b = el("button", { type: "button", class: "text-btn", text: "Suggest an actor" });
+    b.addEventListener("click", () => openActorForm(q));
+    return el("p", { class: "suggest-row" }, "Looking for an actor who isn't in the register?", b);
+  }
+  function renderFilmPanel(q, data) {
+    const panel = $("filmPanel");
+    panel.textContent = "";
+    panel.append(el("div", { class: "eyebrow", text: "Not on this page" }));
+    if (data.state === "loading") {
+      panel.append(el("h2", { text: "Looking up films and shows called “" + q + "”…" }));
+      return;
+    }
+    if (data.state === "error") {
+      panel.append(el("h2", { text: "Couldn't look up “" + q + "” just now" }),
+        el("p", { class: "film-msg", text: "Check your internet connection, then change the search slightly to try again." }), suggestRow(q));
+      return;
+    }
+    if (!data.films.length) {
+      panel.append(el("h2", { text: "No films or shows found for “" + q + "”" }),
+        el("p", { class: "film-msg", text: "If it's an actor's name, they may not be in the register yet." }), suggestRow(q));
+      return;
+    }
+    panel.append(el("h2", { text: data.films.length === 1 ? "A film or show matching “" + q + "”" : "Films and shows matching “" + q + "”" }));
+    const list = el("div", { class: "film-list" });
+    for (const f of data.films) {
+      const pic = f.image ? el("img", { src: filePath(f.image, 120), alt: "", loading: "lazy", referrerpolicy: "no-referrer" }) : el("div", { class: "no-img" });
+      if (f.image) pic.addEventListener("error", () => pic.replaceWith(el("div", { class: "no-img" })), { once: true });
+      const body = el("div", { style: "min-width:0" },
+        el("div", { class: "kind", text: [f.kind, f.year].filter(Boolean).join(" · ") }),
+        el("h3", { text: f.title }));
+      if (f.directors.length) body.append(el("p", { text: "Directed by " + f.directors.slice(0, 3).join(", ") }));
+      const ours = f.cast.filter((x) => x.actor);
+      if (ours.length) {
+        const chips = el("span", { class: "in-register" });
+        ours.forEach((x) => {
+          const b = el("button", { type: "button", title: "Show " + x.actor.name + " in the table", text: x.actor.name });
+          b.addEventListener("click", () => { $("q").value = ""; selectedId = null; selectActor(x.actor); });
+          chips.append(b);
+        });
+        body.append(el("p", {}, el("span", { class: "cast-label", text: "In this register" }), chips));
+      }
+      const others = f.cast.filter((x) => !x.actor);
+      if (others.length) body.append(el("p", {}, el("span", { class: "cast-label", text: ours.length ? "Also starring" : "Starring" }),
+        others.slice(0, 10).map((x) => x.name).join(", ") + (others.length > 10 ? " and " + (others.length - 10) + " more" : "")));
+      if (!f.cast.length) body.append(el("p", { text: "No cast list on record." }));
+      if (f.article) body.append(el("p", {}, el("a", { class: "more", href: f.article, target: "_blank", rel: "noopener", text: "More about this " + (f.kind || "film").toLowerCase() })));
+      list.append(el("article", { class: "film-card" }, pic, body));
+    }
+    panel.append(list);
+    const sr = suggestRow(q); if (sr) panel.append(sr);
+  }
+
+  /* ---------- visitor submissions: suggest an actor, add a photo ---------- */
+  // Uploads go to a private folder and wait for approval in the admin dashboard (admin.html).
+  // Switched on only once the database answers ear_approved, i.e. after setup-submissions.sql has been run.
+  let submitOn = false;
+  const SUPABASE_JS = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
+  let sbReady = null;
+  function loadSupabase() {
+    if (sbReady) return sbReady;
+    sbReady = new Promise((res, rej) => {
+      const js = document.createElement("script");
+      js.src = SUPABASE_JS;
+      js.onload = () => {
+        try { res(window.supabase.createClient(VOTES_API.url, VOTES_API.key, { auth: { persistSession: false, autoRefreshToken: false } })); }
+        catch (e) { sbReady = null; rej(e); }
+      };
+      js.onerror = () => { sbReady = null; rej(new Error("library")); };
+      document.head.append(js);
+    });
+    return sbReady;
+  }
+  async function shrinkImage(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error("Please choose a JPEG, PNG or WebP photo.");
+    if (file.size > 15 * 1024 * 1024) throw new Error("That photo is over 15 MB. Please choose a smaller one.");
+    let bmp;
+    try { bmp = await createImageBitmap(file); }
+    catch (e) {
+      bmp = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("That file isn't a photo we can read.")); i.src = URL.createObjectURL(file); });
+    }
+    const w = bmp.width, h = bmp.height, k = Math.min(1, 800 / Math.max(w, h));
+    const c = document.createElement("canvas"); c.width = Math.round(w * k); c.height = Math.round(h * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("That file isn't a photo we can read."))), "image/jpeg", 0.86));
+  }
+
+  const formDlg = $("formDlg");
+  function fieldInput(id, label, attrs, required, hint) {
+    const input = el(attrs.tag === "textarea" ? "textarea" : "input", { id, name: id, ...attrs, tag: null });
+    if (required) input.required = true;
+    return el("div", { class: "f-field" },
+      el("label", { for: id }, label, required ? el("span", { class: "req", text: " *" }) : null),
+      input, hint ? el("span", { class: "f-hint", text: hint }) : null);
+  }
+  function openForm(kind, opts) {
+    const isPhoto = kind === "photo";
+    formDlg.textContent = "";
+    const close = el("button", { type: "button", class: "icon-btn", "aria-label": "Close" });
+    close.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    close.addEventListener("click", () => formDlg.close());
+    formDlg.append(el("div", { class: "form-head" },
+      el("div", {}, el("div", { class: "eyebrow", text: isPhoto ? "Add a photo" : "Suggest an actor" }),
+        el("h2", { id: "formTitle", text: isPhoto ? opts.actor.name : "Who's missing?" })), close));
+    const form = el("form", { class: "form-body", novalidate: "" });
+    form.append(el("p", { class: "intro", text: isPhoto
+      ? "There's no photo of " + opts.actor.name + " yet. Send one and we'll add it once it's been checked."
+      : "Tell us about an English actor who isn't in the register. Fields marked * are required; we'll check the details before adding them." }));
+    if (!isPhoto) {
+      const parts = (opts.prefill || "").trim().split(/\s+/).filter(Boolean);
+      form.append(el("div", { class: "f-row" },
+        fieldInput("f_first", "Actor's first name", { type: "text", maxlength: "100", autocomplete: "off", value: parts.length > 1 ? parts.slice(0, -1).join(" ") : "" }, true),
+        fieldInput("f_last", "Actor's last name", { type: "text", maxlength: "100", autocomplete: "off", value: parts.length ? parts[parts.length - 1] : "" }, true)),
+        fieldInput("f_film", "A film or show they appeared in", { type: "text", maxlength: "200", autocomplete: "off" }, true));
+    }
+    form.append(fieldInput("f_email", "Your email", { type: "email", maxlength: "254", autocomplete: "email", value: storeGet("ear-email") || "" }, true,
+      "Only used if we need to check something with you. It isn't shown on the site."));
+    const fileInput = el("input", { type: "file", id: "f_photo", accept: "image/jpeg,image/png,image/webp" });
+    if (isPhoto) fileInput.required = true;
+    const preview = el("span", { class: "f-photo" });
+    form.append(el("div", { class: "f-field" },
+      el("label", { for: "f_photo" }, isPhoto ? "Photo" : "Photo of the actor (optional)", isPhoto ? el("span", { class: "req", text: " *" }) : null),
+      fileInput, preview, el("span", { class: "f-hint", text: "JPEG, PNG or WebP. A clear face photo works best." })));
+    if (isPhoto) form.append(fieldInput("f_note", "Where and when was it taken? (optional)", { tag: "textarea", maxlength: "1000" }, false));
+    const rights = el("input", { type: "checkbox", id: "f_rights" });
+    const rightsRow = el("label", { class: "f-check", for: "f_rights" }, rights,
+      el("span", {}, "I took this photo or have permission to share it, and it may be shown on this site.", el("span", { class: "req", text: " *" })));
+    rightsRow.hidden = !isPhoto;
+    form.append(rightsRow);
+    rights.addEventListener("change", () => { if (status.classList.contains("err")) { status.className = "f-status"; status.textContent = ""; } });
+    form.append(el("div", { class: "hp", "aria-hidden": "true" }, el("label", {}, "Leave this empty", el("input", { type: "text", id: "f_website", tabindex: "-1", autocomplete: "off" }))));
+    const submit = el("button", { type: "submit", class: "f-submit", text: isPhoto ? "Send photo" : "Send suggestion" });
+    const status = el("span", { class: "f-status", role: "status" });
+    form.append(el("div", { class: "f-actions" }, submit, status));
+    fileInput.addEventListener("change", () => {
+      preview.textContent = "";
+      const f = fileInput.files[0];
+      rightsRow.hidden = !f && !isPhoto;
+      if (f && /^image\//.test(f.type)) preview.append(el("img", { src: URL.createObjectURL(f), alt: "Selected photo" }), el("span", { class: "f-hint", text: f.name }));
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.className = "f-status"; status.textContent = "";
+      const v = (id) => (form.querySelector("#" + id) ? form.querySelector("#" + id).value.trim() : "");
+      const file = fileInput.files[0] || null;
+      const fail = (msg, focusId) => { status.className = "f-status err"; status.textContent = msg; if (focusId) form.querySelector("#" + focusId).focus(); };
+      if (!isPhoto && !v("f_first")) return fail("Please enter the actor's first name.", "f_first");
+      if (!isPhoto && !v("f_last")) return fail("Please enter the actor's last name.", "f_last");
+      if (!isPhoto && !v("f_film")) return fail("Please name a film or show they appeared in.", "f_film");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v("f_email"))) return fail("Please enter a valid email address.", "f_email");
+      if (isPhoto && !file) return fail("Please choose a photo.", "f_photo");
+      if (file && !rights.checked) return fail("Please confirm you may share this photo.", "f_rights");
+      submit.disabled = true; status.textContent = file ? "Uploading photo…" : "Sending…";
+      try {
+        const sb = await loadSupabase().catch(() => { throw new Error("Couldn't connect. Check your internet connection and try again."); });
+        let path = null;
+        if (file) {
+          const blob = await shrinkImage(file);
+          path = "pending/" + newId() + ".jpg";
+          const up = await sb.storage.from("ear-submissions").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+          if (up.error) throw new Error("The photo didn't upload. Please try again.");
+          status.textContent = "Sending…";
+        }
+        const { error } = await sb.rpc("ear_submit", {
+          p_kind: isPhoto ? "photo" : "actor", p_email: v("f_email"),
+          p_first: isPhoto ? null : v("f_first"), p_last: isPhoto ? null : v("f_last"), p_film: isPhoto ? null : v("f_film"),
+          p_actor_title: isPhoto ? opts.actor.title : null, p_note: isPhoto ? v("f_note") || null : null,
+          p_photo_path: path, p_rights: !!file && rights.checked, p_website: v("f_website") || null
+        });
+        if (error) throw new Error(error.message && error.message.length < 160 ? error.message : "Something went wrong. Please try again.");
+        storeSet("ear-email", v("f_email"));
+        const who = isPhoto ? opts.actor.name : v("f_first") + " " + v("f_last");
+        const done = el("button", { type: "button", class: "f-submit", text: "Close" });
+        done.addEventListener("click", () => formDlg.close());
+        form.replaceChildren(el("div", { class: "thanks" },
+          el("p", { text: isPhoto ? "Thank you! Your photo of " + who + " has been sent for review." : "Thank you! Your suggestion of " + who + " has been sent for review." }),
+          el("p", { class: "f-hint", text: "It will appear on the site once it's been checked." }), done));
+        done.focus();
+      } catch (err) {
+        submit.disabled = false;
+        fail(err.message || "Something went wrong. Please try again.");
+      }
+    });
+    formDlg.append(form);
+    formDlg.showModal();
+    const first = form.querySelector(isPhoto ? "#f_email" : (form.querySelector("#f_first").value ? "#f_film" : "#f_first"));
+    if (first) first.focus();
+  }
+  const openActorForm = (prefill) => openForm("actor", { prefill });
+  const openPhotoForm = (actor) => openForm("photo", { actor });
+  formDlg.addEventListener("click", (e) => { if (e.target === formDlg) formDlg.close(); });
+
+  /* ---------- approved submissions shown on the site ---------- */
+  let approved = null;
+  const approvedUrl = (path) => VOTES_API.url.replace(/\/+$/, "") + "/storage/v1/object/public/ear-approved/" + path.split("/").map(encodeURIComponent).join("/");
+  async function loadApproved() {
+    if (!votesOn) return;
+    try { approved = await rpc("ear_approved", {}); } catch (e) { console.warn("approved submissions", e); return; }
+    if (!approved || typeof approved !== "object") return;
+    submitOn = true;
+    $("suggestLine").hidden = false;
+    for (const a of actors) if (a.photoShown && !a.hasPhoto && !a.removed) addPhotoButton(a);
+    applyApproved();
+  }
+  function applyApproved() {
+    if (!approved || !actors.length) return;
+    const photos = approved.photos || {};
+    for (const a of actors) {
+      const path = photos[a.title];
+      if (!path || a.communityPhoto) continue;
+      a.communityPhoto = approvedUrl(path);
+      if (a.photoShown && !a.hasPhoto) { a.photoShown = false; a.photoPrep = null; }   // show it in place of "No photo found"
+    }
+    const known = new Set(actors.filter((a) => !a.removed).map((a) => a.name.toLowerCase()));
+    const fresh = (approved.actors || []).filter((x) => x.first && x.last && !known.has((x.first + " " + x.last).toLowerCase()))
+      .map((x) => ({ title: x.first + " " + x.last, name: x.first + " " + x.last, isRed: true,
+                     community: { id: x.id, film: x.film, photo: x.photo ? approvedUrl(x.photo) : null } }));
+    approved.actors = [];   // add each suggested actor once
+    if (fresh.length) { addActors(fresh); setList(actors.length + " names", true); buildAlpha(); }
+    applyViewNow();
+  }
+
   /* ---------- saved-data note ---------- */
   function ago(ts) {
     const days = Math.floor((Date.now() - ts) / DAY);
@@ -1841,6 +2211,7 @@ footer p { max-width: 80ch; }
   function addActors(rawList) {
     const added = rawList.map((r) => {
       const a = { title: r.title, name: r.name, honour: r.honour || null, isRed: !!r.isRed, listBorn: r.listBorn || null, listDied: r.listDied || null };
+      if (r.community) a.community = r.community;
       a.id = actors.length + 1;
       a.sortName = sortName(a.name);
       a.initial = initialOf(a.sortName);
@@ -1885,6 +2256,7 @@ footer p { max-width: 80ch; }
       if (readActorHash()) showActorByTitle(readActorHash());
       renderCacheNote();
       checkForNewNames();
+      applyApproved();
       return;
     }
 
@@ -1910,6 +2282,7 @@ footer p { max-width: 80ch; }
     buildAlpha();
     applyViewNow();
     renderCacheNote();
+    applyApproved();
   }
 
   // Hosted mode: compare the live list with the saved copy and look up only names it doesn't have.
@@ -1938,6 +2311,8 @@ footer p { max-width: 80ch; }
   }
 
   startCounters();
+  loadApproved();
+  $("suggestOpen").addEventListener("click", () => openActorForm(""));
   boot();
 })();
 </script>
