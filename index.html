@@ -603,69 +603,76 @@ footer p { max-width: 80ch; }
 
   /* ---------- 1. the list ---------- */
   const SKIP_TITLE = /^(?:(?:Dame|Sir|Lord|Lady|Baron|Baroness|Knight Bachelor|OBE|MBE|CBE|KBE|DBE|England|English people|English|Actor|Actress|United Kingdom|British|British people)$|Order of|Officer of|Member of|Commander of|Knight|Dame \(|List of|Category:)/i;
-  const STOP_IDS = /^(See_also|References|External_links|Notes|Further_reading|Sources)$/;
-  const EXCLUDE = ".navbox, .reflist, .references, .hatnote, .infobox, .thumb, figure, .mw-editsection, .toc, #toc, .sidebar, .metadata, sup, .shortdescription, .ambox, .portalbox, .side-box, .mw-heading, h2, h3, h4";
+  // Reads the page as a stream of links and text, ignoring layout: each actor entry is a link followed by
+  // a year note like "(born 1974)" or "(1928–2023)". Same rules as sync.py.
+  const CUT_RE = /id="(See_also|References|External_links|Notes|Further_reading|Sources)"/i;
+  const YEAR_PAREN = /\(([^()]*?\d{3,4}[^()]*?)\)/;
+  const decoder = document.createElement("textarea");
+  function cleanText(s) {
+    decoder.innerHTML = s.replace(/<[^>]+>/g, " ");
+    return decoder.value.replace(/\s+/g, " ").trim();
+  }
+  function titleFromHref(href) {
+    decoder.innerHTML = href || ""; href = decoder.value.trim();
+    let m = /[?&]title=([^&]+)/.exec(href);
+    if (m) return decodeURIComponent(m[1]).replace(/_/g, " ");
+    href = href.replace(/^(?:https?:)?\/\/[^/]+/, "");
+    m = /^(?:\.\/|\/wiki\/)([^#?]+)/.exec(href);
+    return m ? decodeURIComponent(m[1]).replace(/_/g, " ") : null;
+  }
+  function attachYears(a, p) {
+    const yrs = (p.match(/\d{3,4}/g) || []).map(Number);
+    if (/born/i.test(p)) a.listBorn = yrs[0] || null;
+    else if (/^\s*died/i.test(p)) a.listDied = yrs[0] || null;
+    else if (/fl\./i.test(p)) { /* floruit: leave blank */ }
+    else if (yrs.length >= 2) { a.listBorn = yrs[0]; a.listDied = yrs[1]; }
+    else if (yrs.length === 1) a.listBorn = yrs[0];
+  }
+  function parseListHtml(html) {
+    const cut = html.search(CUT_RE);
+    if (cut > -1) html = html.slice(0, cut);
+    html = html.replace(/<(sup|style|script)\b[\s\S]*?<\/\1>/gi, " ");
+    const A = /<a\b([^>]*)>([\s\S]*?)<\/a>/gi;
+    const out = [], seen = new Set();
+    let pending = null, pos = 0, m;
+    const commit = (a) => { const k = a.title.toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push(a); } };
+    while ((m = A.exec(html))) {
+      const between = cleanText(html.slice(pos, m.index));
+      pos = A.lastIndex;
+      if (pending) {
+        const pm = YEAR_PAREN.exec(between);
+        if (pm) { attachYears(pending, pm[1]); commit(pending); pending = null; }
+      }
+      const attrs = m[1], text = cleanText(m[2]);
+      const hm = /href="([^"]*)"/i.exec(attrs);
+      const href = hm ? hm[1] : "";
+      const title = titleFromHref(href);
+      if (!title || title.includes(":") || !text || SKIP_TITLE.test(title) || SKIP_TITLE.test(text)) {
+        if (pending && !pending.honour && /^(OBE|MBE|CBE)$/.test(text)) pending.honour = text;
+        continue;
+      }
+      const hon = /\b(Dame|Sir)\s*$/.exec(between);
+      pending = {
+        title, name: text.replace(/^(Sir|Dame)\s+/, "").replace(/\s*\((actor|actress)\)$/i, ""),
+        honour: hon ? hon[1] : null, isRed: /class="new"/.test(attrs) || /redlink=1/.test(href),
+        listBorn: null, listDied: null
+      };
+    }
+    if (pending) {
+      const pm = YEAR_PAREN.exec(cleanText(html.slice(pos, pos + 400)));
+      if (pm) { attachYears(pending, pm[1]); commit(pending); }
+    }
+    return out;
+  }
 
   async function loadList() {
     const url = WP + "?" + qs({ action: "parse", page: LIST_PAGE, prop: "text", format: "json", formatversion: 2, origin: "*", disablelimitreport: 1, disableeditsection: 1 });
     const data = await getJSON(url, 3);
-    const html = data && data.parse && data.parse.text;
+    let html = data && data.parse && data.parse.text;
+    if (html && typeof html === "object") html = html["*"];
     if (!html) throw new Error("No list returned");
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const root = doc.querySelector(".mw-parser-output") || doc.body;
-    let stop = null;
-    for (const h of root.querySelectorAll("h2")) {
-      if (STOP_IDS.test(h.id || "") || STOP_IDS.test((h.querySelector(".mw-headline") || {}).id || "")) { stop = h; break; }
-    }
-    const seen = new Set();
-    const out = [];
-    for (const a of root.querySelectorAll("a")) {
-      if (stop && !(stop.compareDocumentPosition(a) & Node.DOCUMENT_POSITION_PRECEDING)) continue;
-      if (a.closest(EXCLUDE)) continue;
-      const href = a.getAttribute("href") || "";
-      const isRed = a.classList.contains("new") || /redlink=1/.test(href);
-      let title;
-      if (href.startsWith("/wiki/")) title = decodeURIComponent(href.slice(6).split("#")[0]).replace(/_/g, " ");
-      else if (isRed) { const m = /title=([^&]+)/.exec(href); title = m ? decodeURIComponent(m[1]).replace(/_/g, " ") : null; }
-      if (!title || title.includes(":")) continue;
-      const text = a.textContent.trim();
-      if (!text || SKIP_TITLE.test(title) || SKIP_TITLE.test(text)) continue;
-
-      let after = "", n = a.nextSibling, guard = 0;
-      while (n && guard++ < 4 && after.length < 80) {
-        if (n.nodeType === 1 && n.tagName === "A" && !SKIP_TITLE.test(n.textContent.trim())) break;
-        after += n.textContent; n = n.nextSibling;
-      }
-      const li = a.closest("li");
-      const paren = /\(([^()]*?\d{3,4}[^()]*?)\)/.exec(after);
-      if (!li && !paren) continue;
-      const firstInLi = li ? [...li.querySelectorAll("a")].find((x) => !SKIP_TITLE.test(x.textContent.trim()) && !x.closest("sup")) === a : false;
-      if (!paren && !firstInLi) continue;
-      const key = title.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-
-      let listBorn = null, listDied = null;
-      if (paren) {
-        const yrs = paren[1].match(/\d{3,4}/g) || [];
-        if (/born/i.test(paren[1])) listBorn = +yrs[0];
-        else if (/^\s*died/i.test(paren[1])) listDied = +yrs[0];
-        else if (/fl\./i.test(paren[1])) { /* floruit: leave blank */ }
-        else if (yrs.length >= 2) { listBorn = +yrs[0]; listDied = +yrs[1]; }
-        else if (yrs.length === 1) listBorn = +yrs[0];
-      }
-      let honour = null;
-      const prevText = (a.previousSibling && a.previousSibling.nodeType === 3 ? a.previousSibling.textContent : "");
-      const hm = /\b(Dame|Sir)\s*$/.exec(prevText)
-        || (firstInLi && /^(Dame|Sir)\b/.exec(li.textContent.trim()))
-        || /^(Dame|Sir)\b/.exec(text);
-      if (hm) honour = hm[1];
-      const name = text.replace(/^(Sir|Dame)\s+/, "").replace(/\s*\((actor|actress)\)$/i, "");
-      const extra = /\b(OBE|MBE|CBE)\b/.exec(after);
-      if (extra && !honour) honour = extra[1];
-
-      out.push({ title, name, honour, isRed, listBorn, listDied });
-    }
+    const out = parseListHtml(html);
+    if (!out.length) throw new Error("No names found on the list page");
     return out;
   }
 

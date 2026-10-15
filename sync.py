@@ -26,7 +26,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timezone
-from html.parser import HTMLParser
+import html as htmllib
 
 WP_API = os.environ.get("EAR_WP_API", "https://en.wikipedia.org/w/api.php")
 COMMONS_API = os.environ.get("EAR_COMMONS_API", "https://commons.wikimedia.org/w/api.php")
@@ -108,163 +108,101 @@ def norm_file(s):
     return re.sub(r"^File:", "", s or "", flags=re.I).replace("_", " ").strip().lower()
 
 
-# ---------------------------------------------------------------- 1. the list (same rules as the page)
-VOID = {"br", "img", "hr", "meta", "link", "input", "wbr", "area", "base", "col", "embed", "source", "track", "param"}
-
-
-class Node:
-    __slots__ = ("tag", "attrs", "children", "parent", "text")
-
-    def __init__(self, tag, attrs=None, parent=None, text=None):
-        self.tag, self.attrs, self.parent, self.text = tag, attrs or {}, parent, text
-        self.children = []
-
-    def classes(self):
-        return (self.attrs.get("class") or "").split()
-
-    def text_content(self):
-        if self.tag is None:
-            return self.text
-        return "".join(c.text_content() for c in self.children)
-
-    def iter(self):
-        yield self
-        for c in self.children:
-            yield from c.iter()
-
-    def closest(self, pred):
-        n = self
-        while n is not None and n.tag != "#root":
-            if n.tag and pred(n):
-                return n
-            n = n.parent
-        return None
-
-    def siblings_after(self):
-        if not self.parent:
-            return []
-        kids = self.parent.children
-        return kids[kids.index(self) + 1:]
-
-    def previous_sibling(self):
-        if not self.parent:
-            return None
-        kids = self.parent.children
-        i = kids.index(self)
-        return kids[i - 1] if i > 0 else None
-
-
-class Builder(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.root = Node("#root")
-        self.cur = self.root
-
-    def handle_starttag(self, tag, attrs):
-        n = Node(tag, dict(attrs), self.cur)
-        self.cur.children.append(n)
-        if tag not in VOID:
-            self.cur = n
-
-    def handle_startendtag(self, tag, attrs):
-        self.cur.children.append(Node(tag, dict(attrs), self.cur))
-
-    def handle_endtag(self, tag):
-        n = self.cur
-        while n is not self.root and n.tag != tag:
-            n = n.parent
-        if n is not self.root:
-            self.cur = n.parent
-
-    def handle_data(self, data):
-        self.cur.children.append(Node(None, parent=self.cur, text=data))
-
-
+# ---------------------------------------------------------------- 1. the list
+# Reads the page as a stream of links and text, ignoring layout: every actor entry is a link
+# followed by a year note such as "(born 1974)" or "(1928–2023)". Works whether entries sit in
+# bullet lists, paragraphs or one long run of text.
 SKIP = re.compile(r"^(?:(?:Dame|Sir|Lord|Lady|Baron|Baroness|Knight Bachelor|OBE|MBE|CBE|KBE|DBE|England|English people|English|Actor|Actress|United Kingdom|British|British people)$|Order of|Officer of|Member of|Commander of|Knight|Dame \(|List of|Category:)", re.I)
-STOP_IDS = re.compile(r"^(See_also|References|External_links|Notes|Further_reading|Sources)$")
-EXCL_CLASSES = {"navbox", "reflist", "references", "hatnote", "infobox", "thumb", "mw-editsection", "toc", "sidebar",
-                "metadata", "shortdescription", "ambox", "portalbox", "side-box", "mw-heading"}
-EXCL_TAGS = {"figure", "sup", "h2", "h3", "h4"}
+CUT_RE = re.compile(r'id="(See_also|References|External_links|Notes|Further_reading|Sources)"', re.I)
+A_RE = re.compile(r"<a\b([^>]*)>(.*?)</a>", re.I | re.S)
+HREF_RE = re.compile(r'href="([^"]*)"', re.I)
+YEAR_PAREN = re.compile(r"\(([^()]*?\d{3,4}[^()]*?)\)")
+DROP_BLOCKS = re.compile(r"<(sup|style|script)\b.*?</\1>", re.I | re.S)
 
 
-def excluded(n):
-    return n.tag in EXCL_TAGS or n.attrs.get("id") == "toc" or bool(EXCL_CLASSES.intersection(n.classes()))
+def clean(s):
+    return re.sub(r"\s+", " ", htmllib.unescape(re.sub(r"<[^>]+>", " ", s))).strip()
+
+
+def title_from_href(href):
+    href = htmllib.unescape(href or "").strip()
+    m = re.search(r"[?&]title=([^&]+)", href)
+    if m:
+        return urllib.parse.unquote(m.group(1)).replace("_", " ")
+    href = re.sub(r"^(?:https?:)?//[^/]+", "", href)
+    m = re.match(r"^(?:\./|/wiki/)([^#?]+)", href)
+    return urllib.parse.unquote(m.group(1)).replace("_", " ") if m else None
+
+
+def attach_years(a, p):
+    yrs = [int(y) for y in re.findall(r"\d{3,4}", p)]
+    if re.search(r"born", p, re.I):
+        a["listBorn"] = yrs[0] if yrs else None
+    elif re.match(r"^\s*died", p, re.I):
+        a["listDied"] = yrs[0] if yrs else None
+    elif re.search(r"fl\.", p, re.I):
+        pass
+    elif len(yrs) >= 2:
+        a["listBorn"], a["listDied"] = yrs[0], yrs[1]
+    elif len(yrs) == 1:
+        a["listBorn"] = yrs[0]
+
+
+def parse_list_html(html):
+    cut = CUT_RE.search(html)
+    if cut:
+        html = html[:cut.start()]
+    html = DROP_BLOCKS.sub(" ", html)  # footnote markers and styles, never actor names
+    out, seen = [], set()
+    pending, pos = None, 0
+
+    def commit(a):
+        k = a["title"].lower()
+        if k not in seen:
+            seen.add(k)
+            out.append(a)
+
+    for m in A_RE.finditer(html):
+        between = clean(html[pos:m.start()])
+        pos = m.end()
+        if pending:
+            pm = YEAR_PAREN.search(between)
+            if pm:
+                attach_years(pending, pm.group(1))
+                commit(pending)
+                pending = None
+        attrs, text = m.group(1), clean(m.group(2))
+        hm = HREF_RE.search(attrs)
+        href = hm.group(1) if hm else ""
+        title = title_from_href(href)
+        if not title or ":" in title or not text or SKIP.search(title) or SKIP.search(text):
+            if pending and not pending["honour"] and re.fullmatch(r"OBE|MBE|CBE", text or ""):
+                pending["honour"] = text
+            continue
+        hon = re.search(r"\b(Dame|Sir)\s*$", between)
+        name = re.sub(r"\s*\((actor|actress)\)$", "", re.sub(r"^(Sir|Dame)\s+", "", text), flags=re.I)
+        pending = {"title": title, "name": name, "honour": hon.group(1) if hon else None,
+                   "isRed": 'class="new"' in attrs or "redlink=1" in href,
+                   "listBorn": None, "listDied": None}
+    if pending:
+        pm = YEAR_PAREN.search(clean(html[pos:pos + 400]))
+        if pm:
+            attach_years(pending, pm.group(1))
+            commit(pending)
+    return out, html
 
 
 def load_list():
     d = api(WP_API, action="parse", page=LIST_PAGE, prop="text", disablelimitreport=1, disableeditsection=1)
-    b = Builder()
-    b.feed(d["parse"]["text"])
-    root = b.root
-    out, seen = [], set()
-    for a in root.iter():
-        if a.tag == "h2" and (STOP_IDS.match(a.attrs.get("id", "")) or any(
-                STOP_IDS.match(c.attrs.get("id", "")) for c in a.iter() if c.tag and c.attrs.get("id"))):
-            break
-        if a.tag != "a" or a.closest(excluded):
-            continue
-        href = a.attrs.get("href", "")
-        is_red = "new" in a.classes() or "redlink=1" in href
-        title = None
-        if href.startswith("/wiki/"):
-            title = urllib.parse.unquote(href[6:].split("#")[0]).replace("_", " ")
-        elif is_red:
-            m = re.search(r"title=([^&]+)", href)
-            title = urllib.parse.unquote(m.group(1)).replace("_", " ") if m else None
-        if not title or ":" in title:
-            continue
-        text = a.text_content().strip()
-        if not text or SKIP.search(title) or SKIP.search(text):
-            continue
-        after = ""
-        for i, n in enumerate(a.siblings_after()):
-            if i >= 4 or len(after) >= 80:
-                break
-            if n.tag == "a" and not SKIP.search(n.text_content().strip()):
-                break
-            after += n.text_content()
-        li = a.closest(lambda n: n.tag == "li")
-        paren = re.search(r"\(([^()]*?\d{3,4}[^()]*?)\)", after)
-        if not li and not paren:
-            continue
-        first_in_li = False
-        if li:
-            first = next((x for x in li.iter() if x.tag == "a" and not SKIP.search(x.text_content().strip())
-                          and not x.closest(lambda n: n.tag == "sup")), None)
-            first_in_li = first is a
-        if not paren and not first_in_li:
-            continue
-        key = title.lower()
-        if key in seen:
-            continue
-        seen.add(key)
-        born = died = None
-        if paren:
-            yrs = [int(y) for y in re.findall(r"\d{3,4}", paren.group(1))]
-            p = paren.group(1)
-            if re.search(r"born", p, re.I):
-                born = yrs[0]
-            elif re.match(r"^\s*died", p, re.I):
-                died = yrs[0]
-            elif re.search(r"fl\.", p, re.I):
-                pass
-            elif len(yrs) >= 2:
-                born, died = yrs[0], yrs[1]
-            elif len(yrs) == 1:
-                born = yrs[0]
-        honour = None
-        prev = a.previous_sibling()
-        prev_text = prev.text if prev is not None and prev.tag is None else ""
-        m = re.search(r"\b(Dame|Sir)\s*$", prev_text or "") \
-            or (first_in_li and re.match(r"^(Dame|Sir)\b", li.text_content().strip())) \
-            or re.match(r"^(Dame|Sir)\b", text)
-        if m:
-            honour = m.group(1)
-        name = re.sub(r"\s*\((actor|actress)\)$", "", re.sub(r"^(Sir|Dame)\s+", "", text), flags=re.I)
-        extra = re.search(r"\b(OBE|MBE|CBE)\b", after)
-        if extra and not honour:
-            honour = extra.group(1)
-        out.append({"title": title, "name": name, "honour": honour, "isRed": is_red, "listBorn": born, "listDied": died})
+    html = (d.get("parse") or {}).get("text") or ""
+    if isinstance(html, dict):  # older formatversion shape
+        html = html.get("*", "")
+    if not html:
+        raise RuntimeError("Wikipedia returned no page text")
+    out, scanned = parse_list_html(html)
+    if len(out) < 50:
+        log("  WARNING: only %d names found, so the page layout may have changed. Sample of the page:" % len(out))
+        log("  " + re.sub(r"\s+", " ", scanned[:1500]))
     return out
 
 
