@@ -1,0 +1,56 @@
+# Runs sync.py every Monday (and whenever you press "Run workflow"),
+# saves any new photos and data back into the repository, then publishes the site to GitHub Pages.
+name: Sync from Wikipedia and publish
+
+on:
+  schedule:
+    - cron: "30 21 * * 0"   # Mondays 03:00 India time (Sunday 21:30 UTC)
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  sync-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch new names and missing photos
+        if: github.event_name != 'push'
+        env:
+          EAR_USER_AGENT: ${{ vars.EAR_USER_AGENT }}
+        run: python3 sync.py
+
+      - name: Save new data and photos to the repository
+        if: github.event_name != 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data photos
+          git diff --cached --quiet || git commit -m "Sync actors from Wikipedia"
+          git push
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
