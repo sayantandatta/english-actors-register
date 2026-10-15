@@ -1,10 +1,10 @@
-# Runs sync.py whenever you upload changes, every Monday, and whenever you press "Run workflow".
+# Runs sync.py whenever you upload changes, every Monday and Thursday, and whenever you press "Run workflow".
 # Saves any new photos and data back into the repository, then publishes the site to GitHub Pages.
 name: Sync from Wikipedia and publish
 
 on:
   schedule:
-    - cron: "30 21 * * 0"   # Mondays 03:00 India time (Sunday 21:30 UTC)
+    - cron: "30 21 * * 0,3"   # Mondays and Thursdays 03:00 India time (also keeps the free vote database awake)
   workflow_dispatch:
   push:
     branches: [main]

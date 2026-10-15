@@ -594,6 +594,24 @@ def write_site_files(out, generated):
                 fh.write(sitemap)
 
 
+def keep_database_awake():
+    """Free Supabase projects pause after a week without use. If the page has the vote database
+    switched on, read its totals once so every sync counts as use."""
+    try:
+        with open(PAGE, encoding="utf-8") as fh:
+            m = re.search(r'const VOTES_API = \{ url: "([^"]*)", key: "([^"]*)" \};', fh.read())
+        if not m or not m.group(1) or not m.group(2):
+            return
+        url, key = m.group(1).rstrip("/"), m.group(2)
+        headers = {"apikey": key, "Content-Type": "application/json"}
+        if key.startswith("eyJ"):
+            headers["Authorization"] = "Bearer " + key
+        body, _ = request(url + "/rest/v1/rpc/ear_counts", data=b"{}", headers=headers, tries=2, timeout=30)
+        log("Vote database reached (%d actors with votes)." % len(json.loads(body or b"{}")))
+    except Exception as e:  # noqa: BLE001
+        log("Couldn't reach the vote database:", e)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--full", action="store_true", help="re-fetch dates and credits for every actor")
@@ -706,6 +724,7 @@ def main():
                 os.remove(os.path.join(PHOTO_DIR, f))
                 pruned += 1
 
+    keep_database_awake()
     incomplete = sum(1 for r in out if not r["complete"])
     log("Done: %d actors saved, %d photos downloaded, %d unchanged%s." %
         (len(out), downloaded, reused, ", %d unused photos deleted" % pruned if args.prune else ""))

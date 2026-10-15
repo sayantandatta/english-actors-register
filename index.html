@@ -280,6 +280,27 @@ ol.films a { text-decoration: none; }
 ol.films a:hover { text-decoration: underline; }
 ol.films .yr { font: 12px var(--font-data); color: var(--muted); margin-left: 4px; }
 
+/* ---------- visitor counter and votes ---------- */
+.visits { margin: 12px 0 0; display: flex; align-items: center; gap: 7px; font: 12px/1.4 var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.visits b { color: var(--ink); font-weight: 500; }
+.visits svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.votes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.vote-btn {
+  display: inline-flex; align-items: center; gap: 5px; cursor: pointer; padding: 3px 9px 3px 7px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--muted);
+  font: 12px/1.3 var(--font-data); font-variant-numeric: tabular-nums;
+}
+.vote-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.vote-btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+.vote-btn.like[aria-pressed="true"] { color: var(--ok); border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, var(--surface)); }
+.vote-btn.dislike[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.vote-btn.neutral[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); background: var(--paper); }
+.vote-btn:disabled { opacity: .6; cursor: progress; }
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 8px; background: var(--ink); color: var(--paper);
+  font-size: 13px; box-shadow: 0 8px 24px rgb(0 0 0 / .25);
+}
 .full-index { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
 .full-index summary { cursor: pointer; font: 400 22px/1.2 var(--font-display); padding: 6px 0; }
 .full-index summary:hover { color: var(--accent); }
@@ -332,6 +353,10 @@ footer p { max-width: 80ch; }
     <div class="eyebrow">England · Stage and screen</div>
     <h1>English Actors Register</h1>
     <p class="lede">Hundreds of actors born in England, past and present, with their dates, a photograph, their last screen appearance and their five best-known films. Choose a letter to browse by surname, or open the map to see where they were born.</p>
+    <p class="visits" id="visits" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span id="visitText"></span>
+    </p>
     <p class="cache-note" id="cacheNote">Checking for photos saved in this browser…</p>
     <div class="notice" id="notice" hidden></div>
   </div>
@@ -457,6 +482,8 @@ footer p { max-width: 80ch; }
   </div>
   <div class="map" id="map"></div>
 </dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
 
 <footer>
   <div class="wrap">
@@ -771,7 +798,9 @@ footer p { max-width: 80ch; }
   function buildRow(a) {
     const nameLink = el("a", { class: "name", href: "https://en.wikipedia.org/wiki/" + encodeURIComponent(a.title.replace(/ /g, "_")), target: "_blank", rel: "noopener", text: a.name });
     a.ui = { links: el("div", { class: "links" }), num: el("td", { class: "c-num" }) };
-    const nameCell = el("td", { class: "c-name" }, a.honour ? el("span", { class: "honour", text: a.honour }) : null, nameLink, a.ui.links);
+    a.ui.votes = votesOn ? el("div", { class: "votes", role: "group", "aria-label": "Your opinion of " + a.name }) : null;
+    const nameCell = el("td", { class: "c-name" }, a.honour ? el("span", { class: "honour", text: a.honour }) : null, nameLink, a.ui.links, a.ui.votes);
+    if (a.ui.votes) renderVotes(a);
     a.ui.photo = el("figure", {}, el("div", { class: "frame" }));
     setPhoto(a.ui.photo, "queued");
     const waiting = () => el("span", { class: "pending", text: "Waiting…" });
@@ -1626,6 +1655,115 @@ footer p { max-width: 80ch; }
   }
   window.addEventListener("hashchange", () => { const t = readActorHash(); if (t) showActorByTitle(t); });
 
+  /* ---------- visitor counter and votes ---------- */
+  // Uses a free Supabase database (see setup.sql). Fill in the two values below to switch these features on;
+  // left blank, the counter and vote buttons simply don't appear. The key is the public "anon"/"publishable" key.
+  const VOTES_API = { url: "", key: "" };
+  const votesOn = !!(VOTES_API.url && VOTES_API.key);
+  const storeGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const storeSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* private window: votes still count, just not remembered */ } };
+  function newId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    const b = crypto.getRandomValues(new Uint8Array(16)); b[6] = (b[6] & 15) | 64; b[8] = (b[8] & 63) | 128;
+    const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
+  }
+  let visitorId = storeGet("ear-visitor");
+  if (!/^[0-9a-f-]{36}$/i.test(visitorId || "")) { visitorId = newId(); storeSet("ear-visitor", visitorId); }
+  let myVotes = {};
+  try { myVotes = JSON.parse(storeGet("ear-votes") || "{}") || {}; } catch (e) { myVotes = {}; }
+  const tallies = new Map();   // actor title -> { like, dislike, neutral }
+  let votesReady = false;
+  const fmtN = (n) => Number(n || 0).toLocaleString("en-GB");
+
+  async function rpc(fn, body) {
+    const headers = { "Content-Type": "application/json", apikey: VOTES_API.key };
+    if (/^eyJ/.test(VOTES_API.key)) headers.Authorization = "Bearer " + VOTES_API.key; // older JWT-style keys
+    const r = await fetchTimeout(VOTES_API.url.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, 15000,
+      { method: "POST", headers, body: JSON.stringify(body || {}) });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }
+
+  const ICONS = {
+    like: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>',
+    dislike: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>',
+    neutral: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 15h8"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>'
+  };
+  const VOTE_WORD = { like: ["like", "likes"], dislike: ["dislike", "dislikes"], neutral: ["neutral", "neutral"] };
+
+  function renderVotes(a) {
+    const box = a.ui.votes;
+    if (!box) return;
+    box.hidden = !votesReady;
+    const t = tallies.get(a.title) || { like: 0, dislike: 0, neutral: 0 };
+    const mine = myVotes[a.title] || null;
+    box.textContent = "";
+    for (const c of ["like", "dislike", "neutral"]) {
+      const n = t[c] || 0;
+      const b = el("button", { type: "button", class: "vote-btn " + c, "data-choice": c, "aria-pressed": String(mine === c),
+        "aria-label": (mine === c ? "Remove your " + VOTE_WORD[c][0] : c[0].toUpperCase() + c.slice(1)) + " for " + a.name + " (" + fmtN(n) + " " + VOTE_WORD[c][n === 1 ? 0 : 1] + ")",
+        title: mine === c ? "Click again to remove your vote" : c[0].toUpperCase() + c.slice(1) });
+      b.innerHTML = ICONS[c];
+      b.append(el("span", { text: fmtN(n) }));
+      if (a.votePending) b.disabled = true;
+      box.append(b);
+    }
+  }
+  function renderAllVotes() { actors.forEach((a) => { if (!a.removed) renderVotes(a); }); }
+
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => (t.hidden = true), 3500);
+  }
+
+  async function castVote(a, choice) {
+    if (a.votePending) return;
+    const prev = myVotes[a.title] || null;
+    const next = prev === choice ? null : choice;          // clicking your current vote removes it
+    const before = { ...(tallies.get(a.title) || { like: 0, dislike: 0, neutral: 0 }) };
+    const t = { ...before };
+    if (prev) t[prev] = Math.max(0, t[prev] - 1);
+    if (next) t[next] += 1;
+    tallies.set(a.title, t);                                // show the change straight away
+    if (next) myVotes[a.title] = next; else delete myVotes[a.title];
+    a.votePending = true; renderVotes(a);
+    try {
+      const r = await rpc("ear_vote", { p_actor: a.title, p_visitor: visitorId, p_choice: next || "none" });
+      tallies.set(a.title, { like: r.like || 0, dislike: r.dislike || 0, neutral: r.neutral || 0 });
+      storeSet("ear-votes", JSON.stringify(myVotes));
+    } catch (e) {
+      tallies.set(a.title, before);                         // put it back as it was
+      if (prev) myVotes[a.title] = prev; else delete myVotes[a.title];
+      toast("Your vote didn't go through. Check your connection and try again.");
+    } finally {
+      a.votePending = false; renderVotes(a);
+    }
+  }
+  tbody.addEventListener("click", (e) => {
+    const b = e.target.closest(".vote-btn");
+    if (!b) return;
+    const a = byId.get(+b.closest("tr").dataset.id);
+    if (a) castVote(a, b.dataset.choice);
+  });
+
+  async function startCounters() {
+    if (!votesOn) return;
+    rpc("ear_record_visit", { p_visitor: visitorId }).then((r) => {
+      const vt = $("visitText"); vt.textContent = "";
+      vt.append(el("b", { text: fmtN(r.visitors) }), r.visitors === 1 ? " visitor · " : " visitors · ",
+                el("b", { text: fmtN(r.views) }), r.views === 1 ? " page view" : " page views");
+      $("visits").hidden = false;
+    }).catch((e) => console.warn("visit counter", e));
+    try {
+      const all = await rpc("ear_counts", {});
+      for (const [title, [l, d, n]] of Object.entries(all || {})) tallies.set(title, { like: l, dislike: d, neutral: n });
+      votesReady = true;
+    } catch (e) { console.warn("vote counts", e); votesReady = false; }
+    renderAllVotes();
+  }
+
   /* ---------- saved-data note ---------- */
   function ago(ts) {
     const days = Math.floor((Date.now() - ts) / DAY);
@@ -1799,6 +1937,7 @@ footer p { max-width: 80ch; }
     renderCacheNote();
   }
 
+  startCounters();
   boot();
 })();
 </script>

@@ -21,7 +21,7 @@ GitHub hosts the site for free and also runs `sync.py` for you every week, so yo
 4. Open **Settings → Secrets and variables → Actions → Variables** and add a variable named `EAR_USER_AGENT` with a value like `EnglishActorsRegister/1.0 (https://yourname.github.io/english-actors-register; you@example.com)`.
 5. The upload itself starts the first sync automatically (see the **Actions** tab). It takes 10 to 20 minutes. To start one by hand later, open **Actions → Sync from Wikipedia and publish** and press the green **Run workflow** button. Don't use **Re-run** on an old run, because that repeats the old code.
 
-Your site is then live at `https://<your-username>.github.io/english-actors-register/`. It updates itself every Monday and after every upload, and you can press **Run workflow** any time to update it sooner.
+Your site is then live at `https://<your-username>.github.io/english-actors-register/`. It updates itself every Monday and Thursday and after every upload, and you can press **Run workflow** any time to update it sooner.
 
 ## Getting found by search engines
 
@@ -33,6 +33,17 @@ To register the site (once):
 2. **Bing:** open Bing Webmaster Tools and choose **Import from Google Search Console**. This verifies the site and copies the sitemap, and it also covers Yahoo and DuckDuckGo, which use Bing's index.
 
 If you use your own domain, set an Actions variable named `EAR_SITE_URL` to the full address (ending in `/`).
+
+## Visitor counter and votes (optional)
+
+The page can show how many people have visited, and let visitors like, dislike or mark as neutral each actor, with running totals. These need a small free database, so they stay hidden until you set one up:
+
+1. Sign up at supabase.com (you can sign in with GitHub) and create a new project on the **Free** plan. Pick any name and database password, and a region near your visitors.
+2. In the project, open **SQL Editor → New query**, paste everything from `setup.sql` in this folder, and press **Run**.
+3. Open **Project Settings → API** (or **Connect**) and copy the **Project URL** and the **publishable** (or **anon public**) key.
+4. In `index.html`, find `const VOTES_API = { url: "", key: "" };` and put those two values between the quotes.
+
+The publishable key is meant to be public: with `setup.sql` in place it can only count visits, record one vote per browser per actor, and read the totals. No names, emails or IP addresses are stored. Free projects pause after a week without use; the twice-weekly update reads the totals each time, which keeps the database awake.
 
 ## Hosting it anywhere else
 
